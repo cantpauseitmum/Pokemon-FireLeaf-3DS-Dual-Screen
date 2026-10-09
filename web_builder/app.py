@@ -36,8 +36,11 @@ def build():
         return "Missing GBA file", 400
     
     file = request.files["rom_file"]
-    if file.filename == "":
-        return "No file selected", 400
+    if not file or file.filename == "":
+        return render_template("error.html", error_message="No file selected."), 400
+        
+    if not file.filename.endswith(".gba"):
+        return render_template("error.html", error_message="Invalid file format. Please upload a .gba ROM file."), 400
 
     print(f"\n[+] Received file: {file.filename}")
     print("[+] Saving ROM and starting compilation process. This may take a few minutes...")
@@ -54,10 +57,14 @@ def build():
         )
         if process.returncode != 0:
             print("[-] Compilation Error!")
-            return f"<h1>Compilation Error!</h1><pre>{process.stdout}</pre>", 500
+            return render_template("error.html", error_message="The compilation process failed. See logs below:", logs=process.stdout), 500
+    except FileNotFoundError:
+        print("[-] System Error: 'make' command not found.")
+        err_msg = "The 'make' command was not found on your system. Please ensure devkitARM (devkitPro) is installed and added to your system PATH."
+        return render_template("error.html", error_message=err_msg), 500
     except Exception as e:
         print(f"[-] System Error: {str(e)}")
-        return f"<h1>System Error!</h1><p>{str(e)}</p>", 500
+        return render_template("error.html", error_message=f"An unexpected system error occurred: {str(e)}"), 500
 
     print("[+] Compilation finished successfully! Ready for download.")
     return redirect(url_for("success"))
@@ -65,7 +72,7 @@ def build():
 @app.route("/success", methods=["GET"])
 def success():
     if not os.path.exists(CIA_PATH):
-        return "<h1>.cia file not found. Compilation might have failed.</h1>", 404
+        return render_template("error.html", error_message="The .cia file was not found in the dist directory. Compilation might have failed silently."), 404
 
     local_ip = get_local_ip()
     download_url = f"http://{local_ip}:5000/download/cia"
