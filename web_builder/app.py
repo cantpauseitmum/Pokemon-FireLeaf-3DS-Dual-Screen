@@ -2,6 +2,8 @@ import os
 import socket
 import subprocess
 import logging
+import webbrowser
+from threading import Timer
 from flask import Flask, request, render_template, send_file, redirect, url_for
 
 # Disable default Flask/Werkzeug logging
@@ -96,4 +98,11 @@ if __name__ == "__main__":
     print(f"[+] Website running on: http://{ip}:5000")
     print(f"[+] Listening for incoming connections...")
     print("="*50)
+    
+    # Auto-open browser
+    def open_browser():
+        webbrowser.open_new(f"http://127.0.0.1:5000/")
+    
+    Timer(1.25, open_browser).start()
+    
     app.run(host="0.0.0.0", port=5000, debug=False)
