@@ -1,0 +1,20 @@
+{
+  "rom_info": {
+    "name": "Pokemon FireRed (U) 1.0",
+    "game_code": "BPRE",
+    "sha1": "e26ee0d44e809351c8ce2d73c7400cdddc40e5c0"
+  },
+  "graphics": {
+    "overworld_player_boy": { "offset": 2362000, "size": 2048 },
+    "overworld_player_girl": { "offset": 2364048, "size": 2048 },
+    "font_normal": { "offset": 4589200, "size": 8192 },
+    "tileset_pallet_town": { "offset": 2845000, "size": 16384 }
+  },
+  "palettes": {
+    "overworld_player_boy_pal": { "offset": 3721000, "size": 32 },
+    "tileset_pallet_town_pal": { "offset": 2861384, "size": 512 }
+  },
+  "audio": {
+    "bgm_pallet_town": { "offset": 5304000, "size": 4096 }
+  }
+}

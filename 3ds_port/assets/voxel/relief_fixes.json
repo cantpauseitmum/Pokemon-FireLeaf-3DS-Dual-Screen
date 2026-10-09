@@ -1,0 +1,53 @@
+{
+ "version": 1,
+ "layouts": {
+  "LAYOUT_PALLET_TOWN": {
+   "height_overrides": {
+    "12": 2, 
+    "13": 2, 
+    "14": 3, 
+    "15": 3,
+    "100": 1,
+    "101": 1
+   },
+   "ignore_behaviors": [
+    "MB_NORMAL",
+    "MB_TALL_GRASS"
+   ],
+   "description": "Overrides dla budynków w Pallet Town (Dom gracza, Dom Rywala i Laboratorium Oaka)"
+  },
+  "LAYOUT_VIRIDIAN_CITY": {
+   "height_overrides": {
+    "50": 4, 
+    "51": 4, 
+    "52": 4
+   },
+   "force_wall": [
+    "201", "202"
+   ],
+   "description": "Zmusza Voxel Builder do postawienia Gymu Giovanniego jako wysokiej, 4-blokowej struktury z ostrymi krawędziami"
+  }
+ },
+ "pieces": {
+  "kanto_pokemon_center": {
+   "anchor_x": 2,
+   "anchor_y": 1,
+   "width": 5,
+   "height": 5,
+   "roof_elevation": 2
+  },
+  "kanto_pokemart": {
+   "anchor_x": 2,
+   "anchor_y": 1,
+   "width": 4,
+   "height": 4,
+   "roof_elevation": 2
+  }
+ },
+ "furniture": {
+  "indoor_pc": {
+   "elevation": 1,
+   "collision_box": [1, 2, 1]
+  }
+ }
+}
