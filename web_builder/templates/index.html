@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>FireLeaf 3DS Web Builder</title>
@@ -47,17 +47,17 @@
 <body>
     <div class="container">
         <h1>🛠 FireLeaf 3DS Web Builder</h1>
-        <p>Wgraj swój oryginalny plik <strong>Pokémon FireRed (U) 1.0 (Squirrels).gba</strong>, aby rozpocząć proces kompilacji do natywnej wersji na 3DS-a.</p>
+        <p>Upload your clean <strong>Pokémon FireRed (U) 1.0 (Squirrels).gba</strong> ROM to begin compiling the native 3DS homebrew.</p>
         
         <form action="/build" method="post" enctype="multipart/form-data">
             <div class="upload-area">
                 <input type="file" name="rom_file" accept=".gba" required>
             </div>
-            <button type="submit" onclick="this.innerHTML='Kompiluję... (to zajmie chwilę)'; this.style.opacity='0.7';">
-                Wygeneruj grę (.cia)
+            <button type="submit" onclick="this.innerHTML='Compiling... (this will take a moment)'; this.style.opacity='0.7';">
+                Generate Game (.cia)
             </button>
         </form>
-        <p class="info">Twoja gra nigdzie nie zostaje wysłana. Proces odbywa się lokalnie przy użyciu devkitARM.</p>
+        <p class="info">Your game is not sent anywhere. The build process runs locally using devkitARM.</p>
     </div>
 </body>
 </html>

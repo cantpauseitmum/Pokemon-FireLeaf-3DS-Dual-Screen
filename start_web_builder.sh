@@ -1,12 +1,12 @@
 #!/bin/bash
-echo "Uruchamianie lokalnego serwera Web Builder..."
+echo "Starting local Web Builder server..."
 
-# Sprawdzanie czy Flask jest zainstalowany
+# Check if Flask is installed
 if ! python3 -c "import flask" &> /dev/null; then
-    echo "Instalacja frameworka Flask..."
+    echo "Installing Flask framework..."
     python3 -m pip install flask
 fi
 
-# Uruchomienie aplikacji webowej
+# Run the web application
 cd web_builder
 python3 app.py

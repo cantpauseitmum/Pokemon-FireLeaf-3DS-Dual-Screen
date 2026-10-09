@@ -28,16 +28,16 @@ def index():
 @app.route("/build", methods=["POST"])
 def build():
     if "rom_file" not in request.files:
-        return "Brak pliku GBA", 400
+        return "Missing GBA file", 400
     
     file = request.files["rom_file"]
     if file.filename == "":
-        return "Nie wybrano pliku", 400
+        return "No file selected", 400
 
-    # Zapisz wrzucony plik jako główny ROM projektu
+    # Save uploaded file as the main project ROM
     file.save(ROM_PATH)
 
-    # Uruchom proces kompilacji (make release w folderze 3ds_port)
+    # Start compilation process
     try:
         process = subprocess.run(
             ["make", "release"],
@@ -47,16 +47,16 @@ def build():
             text=True
         )
         if process.returncode != 0:
-            return f"<h1>Błąd kompilacji!</h1><pre>{process.stdout}</pre>", 500
+            return f"<h1>Compilation Error!</h1><pre>{process.stdout}</pre>", 500
     except Exception as e:
-        return f"<h1>Błąd systemu!</h1><p>{str(e)}</p>", 500
+        return f"<h1>System Error!</h1><p>{str(e)}</p>", 500
 
     return redirect(url_for("success"))
 
 @app.route("/success", methods=["GET"])
 def success():
     if not os.path.exists(CIA_PATH):
-        return "<h1>Plik .cia nie istnieje. Kompilacja mogła się nie udać.</h1>", 404
+        return "<h1>.cia file not found. Compilation might have failed.</h1>", 404
 
     local_ip = get_local_ip()
     download_url = f"http://{local_ip}:5000/download/cia"
@@ -71,5 +71,5 @@ def download_cia():
     return "File not found", 404
 
 if __name__ == "__main__":
-    print(f"Uruchamiam Web Builder na porcie 5000... Wejdź na http://{get_local_ip()}:5000")
+    print(f"Starting Web Builder on port 5000... Open http://{get_local_ip()}:5000")
     app.run(host="0.0.0.0", port=5000, debug=True)
