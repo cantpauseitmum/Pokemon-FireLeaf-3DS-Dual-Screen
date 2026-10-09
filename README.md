@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="3ds_port/assets/artwork/logo.png" alt="Pokémon FireLeaf 3DS Dual Screen" width="480">
+  <img src="3ds_port/assets/artwork/logo.jpg" alt="Pokémon FireLeaf 3DS Dual Screen" width="480">
 </p>
 
 <h1 align="center">Pokémon FireLeaf 3DS Dual Screen</h1>
@@ -62,7 +62,7 @@ The 3D mode is **off by default**. Open the **OPTIONS** menu on the bottom touch
 
 ## Licensing & Copyright
 
-**Acknowledgments:** This project is a direct fork and adaptation of the brilliant `pokeemerald-3Ds-dualscreen` project by ZallaxDev. The core Dual Screen engine, Voxel renderer base, and Asset Builder pipeline were originally developed for Pokémon Emerald and have been significantly overhauled here to support FireRed/LeafGreen.
+**Acknowledgments:** This project is a direct fork and adaptation of the brilliant `pokeemerald-3Ds-dualscreen` project by ZallaxDev (available at https://github.com/ZallaxDev/pokeemerald-3Ds-dualscreen). The core Dual Screen engine, Voxel renderer base, and Asset Builder pipeline were originally developed for Pokémon Emerald and have been significantly overhauled here to support FireRed/LeafGreen.
 
 The custom backend code for this port (Voxel engines, 3DS hardware integration, UDS Multiplayer) is covered by the project's original license, with adaptations specifically for FireLeaf.
 
