@@ -2,62 +2,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FireLeaf 3DS Web Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --fire: #e94b25;
+            --leaf: #3da54d;
+            --bg: #fcfafa;
+            --card-bg: #ffffff;
+            --text-main: #1f1b1a;
+            --text-muted: #66605e;
+            --border: #eae4e2;
+        }
         body {
-            background-color: #0d1117;
-            color: #c9d1d9;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
             text-align: center;
-            padding: 50px;
+            margin: 0;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo {
+            max-width: 320px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.05));
         }
         .container {
             max-width: 600px;
-            margin: 0 auto;
-            background: #161b22;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            border: 1px solid #30363d;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
         }
-        h1 { color: #58a6ff; }
+        h1 {
+            font-weight: 800;
+            font-size: 32px;
+            margin-top: 0;
+            background: linear-gradient(135deg, var(--fire), var(--leaf));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 16px;
+        }
         .upload-area {
-            border: 2px dashed #30363d;
-            padding: 40px;
-            margin: 20px 0;
-            border-radius: 8px;
-            background: #0d1117;
+            border: 2px dashed var(--border);
+            padding: 60px 20px;
+            margin: 30px 0;
+            border-radius: 12px;
+            background: var(--bg);
+            transition: all 0.3s ease;
         }
-        input[type="file"] { margin-bottom: 20px; }
+        .upload-area:hover {
+            border-color: var(--fire);
+            background: #fffafa;
+        }
+        input[type="file"] {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            font-size: 15px;
+        }
         button {
-            background-color: #238636;
+            background: linear-gradient(135deg, var(--fire), var(--leaf));
             color: #ffffff;
             border: none;
-            padding: 10px 20px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 6px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 30px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(233, 75, 37, 0.2);
+            width: 100%;
         }
-        button:hover { background-color: #2ea043; }
-        p.info { font-size: 14px; color: #8b949e; }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(61, 165, 77, 0.3);
+        }
+        .info {
+            font-size: 13px;
+            margin-top: 25px;
+            color: #999391;
+        }
     </style>
 </head>
 <body>
+    <img src="/static/logo.png" alt="FireLeaf Logo" class="logo">
     <div class="container">
-        <h1>FireLeaf 3DS Web Builder</h1>
+        <h1>FireLeaf 3DS Builder</h1>
         <p>Upload your clean <strong>Pokémon FireRed (U) 1.0 (Squirrels).gba</strong> ROM to begin compiling the native 3DS homebrew.</p>
         
         <form action="/build" method="post" enctype="multipart/form-data">
             <div class="upload-area">
                 <input type="file" name="rom_file" accept=".gba" required>
             </div>
-            <button type="submit" onclick="this.innerHTML='Compiling... (this will take a moment)'; this.style.opacity='0.7';">
-                Generate Game (.cia)
+            <button type="submit" onclick="this.innerHTML='Generating Game Data...'; this.style.opacity='0.8';">
+                Generate Game Data
             </button>
         </form>
-        <p class="info">Your game is not sent anywhere. The build process runs locally using devkitARM.</p>
+        <p class="info">Your game is not sent anywhere. The build process runs entirely locally.</p>
     </div>
 </body>
 </html>

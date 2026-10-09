@@ -2,77 +2,133 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Success! - FireLeaf 3DS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Success - FireLeaf 3DS Web Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --fire: #e94b25;
+            --leaf: #3da54d;
+            --bg: #fcfafa;
+            --card-bg: #ffffff;
+            --text-main: #1f1b1a;
+            --text-muted: #66605e;
+            --border: #eae4e2;
+        }
         body {
-            background-color: #0d1117;
-            color: #c9d1d9;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
             text-align: center;
-            padding: 50px;
+            margin: 0;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo {
+            max-width: 240px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.05));
         }
         .container {
             max-width: 600px;
-            margin: 0 auto;
-            background: #161b22;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            border: 1px solid #30363d;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
         }
-        h1 { color: #2ea043; }
+        h1 {
+            font-weight: 800;
+            font-size: 28px;
+            margin-top: 0;
+            background: linear-gradient(135deg, var(--leaf), #2ea043);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 16px;
+        }
         .qr-code {
-            margin: 20px auto;
+            margin: 40px auto;
             padding: 20px;
-            background: white;
+            background: #ffffff;
+            border-radius: 16px;
             display: inline-block;
-            border-radius: 10px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
         }
-        .qr-code img { display: block; }
-        .download-btn {
-            display: inline-block;
-            margin-top: 20px;
-            background-color: #58a6ff;
-            color: #0d1117;
-            text-decoration: none;
-            padding: 12px 24px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-        .download-btn:hover { background-color: #79c0ff; }
-        .instructions {
-            margin-top: 30px;
-            text-align: left;
-            background: #0d1117;
-            padding: 20px;
+        .qr-code img {
+            display: block;
             border-radius: 8px;
-            border: 1px solid #30363d;
+        }
+        a.download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--fire), #d83a17);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(233, 75, 37, 0.2);
+            margin-bottom: 40px;
+        }
+        a.download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(233, 75, 37, 0.3);
+        }
+        .instructions {
+            text-align: left;
+            background: var(--bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-top: 20px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: var(--text-main);
+            font-size: 18px;
+        }
+        .instructions ol {
+            margin: 0;
+            padding-left: 20px;
+            color: var(--text-muted);
+            line-height: 1.8;
         }
     </style>
 </head>
 <body>
+    <img src="/static/logo.png" alt="FireLeaf Logo" class="logo">
     <div class="container">
-        <h1>Compilation Successful!</h1>
+        <h1>Compilation Successful</h1>
         <p>The 3DS Voxel Engine was successfully merged with your FireRed assets.</p>
         
         <div class="qr-code">
-            <img src="{{ qr_url }}" alt="FBI QR Code">
+            <img src="{{ qr_url }}" alt="QR Code" width="250" height="250">
         </div>
         
         <br>
-        <a href="{{ download_url }}" class="download-btn">Download .cia file directly</a>
+        <a href="{{ download_url }}" class="download-btn">Download .cia file</a>
 
         <div class="instructions">
             <h3>How to install via FBI (Remote Install)</h3>
             <ol>
-                <li>Connect your 3DS to the same Wi-Fi network as this computer.</li>
-                <li>Open the <strong>FBI</strong> application on your 3DS.</li>
-                <li>Select <strong>Remote Install</strong> -> <strong>Scan QR Code</strong>.</li>
-                <li>Scan the QR code above using your console's camera and confirm the installation.</li>
+                <li>Connect your Nintendo 3DS to the same Wi-Fi network.</li>
+                <li>Open the <strong>FBI</strong> app on your console.</li>
+                <li>Scroll down and select <strong>Remote Install</strong>.</li>
+                <li>Select <strong>Scan QR Code</strong> and point the camera at the code above.</li>
+                <li>Confirm the download. The game will appear on your HOME Menu!</li>
             </ol>
-            <p style="color: #8b949e; font-size: 14px;">Recommendation: If Remote Install fails, download the file directly using the button above and copy it to your SD card.</p>
         </div>
     </div>
 </body>
