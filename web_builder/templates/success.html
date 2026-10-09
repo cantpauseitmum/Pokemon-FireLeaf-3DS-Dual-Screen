@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Sukces! - FireLeaf 3DS</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #161b22;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            border: 1px solid #30363d;
+        }
+        h1 { color: #2ea043; }
+        .qr-code {
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            display: inline-block;
+            border-radius: 10px;
+        }
+        .qr-code img { display: block; }
+        .download-btn {
+            display: inline-block;
+            margin-top: 20px;
+            background-color: #58a6ff;
+            color: #0d1117;
+            text-decoration: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .download-btn:hover { background-color: #79c0ff; }
+        .instructions {
+            margin-top: 30px;
+            text-align: left;
+            background: #0d1117;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Kompilacja Zakończona Sukcesem!</h1>
+        <p>Twój silnik 3DS Voxel połączył się z zasobami FireRed pomyślnie.</p>
+        
+        <div class="qr-code">
+            <img src="{{ qr_url }}" alt="QR Code do FBI">
+        </div>
+        
+        <br>
+        <a href="{{ download_url }}" class="download-btn">⬇️ Pobierz plik .cia na dysk</a>
+
+        <div class="instructions">
+            <h3>Jak zainstalować za pomocą FBI (Remote Install)?</h3>
+            <ol>
+                <li>Podłącz swojego 3DS-a do tej samej sieci Wi-Fi co komputer.</li>
+                <li>Uruchom aplikację <strong>FBI</strong> w menu głównym 3DS-a.</li>
+                <li>Wybierz opcję <strong>Remote Install</strong> -> <strong>Scan QR Code</strong>.</li>
+                <li>Zeskanuj powyższy kod aparatem konsoli i zaakceptuj instalację.</li>
+            </ol>
+            <p style="color: #8b949e; font-size: 14px;">Zalecane: Jeśli Remote Install zawiedzie, pobierz plik ręcznie przyciskiem i skopiuj na kartę SD.</p>
+        </div>
+    </div>
+</body>
+</html>
