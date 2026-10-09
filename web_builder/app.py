@@ -84,7 +84,7 @@ def download_cia():
 if __name__ == "__main__":
     ip = get_local_ip()
     print("="*50)
-    print("🔥 FIRELEAF 3DS WEB BUILDER SERVER 🔥")
+    print(" FIRELEAF 3DS WEB BUILDER SERVER ")
     print("="*50)
     print(f"[+] Website running on: http://{ip}:5000")
     print(f"[+] Listening for incoming connections...")
