@@ -29,19 +29,25 @@ As a decompilation port, this project is 100% legal and **contains no copyrighte
 
 Our custom Asset Builder will dynamically extract textures, map layouts, and Sappy Audio music directly from your ROM file.
 
-### How to compile on MacOS / Linux
+### How to compile (Web Builder UI) - Windows, macOS, Linux
 
-Requirements: **devkitARM** (via devkitPro), `libctru`, `makerom`, `bannertool`, and Python 3.
+We have included a highly automated, local **Web Builder** that completely simplifies the compilation process and allows you to install the game directly via a QR code.
 
-```sh
-# Clone the repository and navigate to the 3ds_port directory
-cd 3ds_port
+**Prerequisites for all platforms:** 
+You must have **devkitARM** (via devkitPro) and **Python 3** installed on your system.
 
-# Run the build process to integrate GBA code with the 3DS backend and generate the forwarder
-make release
-```
-
-During compilation, the Python scripts (located in the `builder/` directory) will validate your `.gba` file's SHA1 hash, extract MIDI music, Pokémon cries, and 3D tiles, and pack everything into a format readable by the 3DS. The resulting `.cia` and `.3dsx` files will be placed in the `3ds_port/dist/` directory.
+**Instructions:**
+1. Clone the repository to your local machine.
+2. Open your terminal (On Windows, use the **MSYS2** terminal provided by devkitPro).
+3. Run the setup script from the root folder:
+   ```sh
+   ./start_web_builder.sh
+   ```
+   *(If you are on pure Windows without bash, you can simply run `python web_builder/app.py`)*
+4. Open your browser and navigate to `http://127.0.0.1:5000` (or the IP displayed in the console).
+5. Use the sleek, dark-themed UI to upload your `.gba` ROM and click **Generate Game**.
+6. The Python scripts will validate your ROM's SHA1 hash, extract assets, and `make release` will compile the code.
+7. Upon success, you will see a **QR Code**. Open FBI on your 3DS -> **Remote Install** -> **Scan QR Code**, and the console will wirelessly download and install your custom `.cia` directly from your local server!
 
 ## Kanto in Voxel 3D
 
