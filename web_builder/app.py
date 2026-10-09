@@ -1,7 +1,12 @@
 import os
 import socket
 import subprocess
+import logging
 from flask import Flask, request, render_template, send_file, redirect, url_for
+
+# Disable default Flask/Werkzeug logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
 
@@ -34,10 +39,11 @@ def build():
     if file.filename == "":
         return "No file selected", 400
 
-    # Save uploaded file as the main project ROM
+    print(f"\n[+] Received file: {file.filename}")
+    print("[+] Saving ROM and starting compilation process. This may take a few minutes...")
+    
     file.save(ROM_PATH)
 
-    # Start compilation process
     try:
         process = subprocess.run(
             ["make", "release"],
@@ -47,10 +53,13 @@ def build():
             text=True
         )
         if process.returncode != 0:
+            print("[-] Compilation Error!")
             return f"<h1>Compilation Error!</h1><pre>{process.stdout}</pre>", 500
     except Exception as e:
+        print(f"[-] System Error: {str(e)}")
         return f"<h1>System Error!</h1><p>{str(e)}</p>", 500
 
+    print("[+] Compilation finished successfully! Ready for download.")
     return redirect(url_for("success"))
 
 @app.route("/success", methods=["GET"])
@@ -67,9 +76,17 @@ def success():
 @app.route("/download/cia", methods=["GET"])
 def download_cia():
     if os.path.exists(CIA_PATH):
+        client_ip = request.remote_addr
+        print(f"\n[+] Sending file: Pokemon FireLeaf.cia to {client_ip}...")
         return send_file(CIA_PATH, as_attachment=True)
     return "File not found", 404
 
 if __name__ == "__main__":
-    print(f"Starting Web Builder on port 5000... Open http://{get_local_ip()}:5000")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    ip = get_local_ip()
+    print("="*50)
+    print("🔥 FIRELEAF 3DS WEB BUILDER SERVER 🔥")
+    print("="*50)
+    print(f"[+] Website running on: http://{ip}:5000")
+    print(f"[+] Listening for incoming connections...")
+    print("="*50)
+    app.run(host="0.0.0.0", port=5000, debug=False)
