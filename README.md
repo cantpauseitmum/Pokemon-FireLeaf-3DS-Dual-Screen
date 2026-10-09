@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="3ds_port/assets/artwork/logo.jpg" alt="Pokémon FireLeaf 3DS Dual Screen" width="480">
+  <img src="3ds_port/assets/artwork/logo.png" alt="Pokémon FireLeaf 3DS Dual Screen" width="480">
 </p>
 
 <h1 align="center">Pokémon FireLeaf 3DS Dual Screen</h1>
