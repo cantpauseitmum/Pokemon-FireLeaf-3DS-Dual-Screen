@@ -43,7 +43,7 @@ You must have **devkitARM** (via devkitPro) and **Python 3** installed on your s
    - **Windows**: Double-click `Start_Web_Builder.bat`
    - **macOS**: Double-click `Start_Web_Builder.command`
    - **Linux**: Run `./start_web_builder.sh` in the terminal
-4. Open your browser and navigate to `http://127.0.0.1:5000` (or the IP displayed in the console).
+4. Open your browser and navigate to `http://127.0.0.1:5050` (or the IP displayed in the console).
 5. Use the sleek, dark-themed UI to upload your `.gba` ROM and click **Generate Game**.
 6. The Python scripts will validate your ROM's SHA1 hash, extract assets, and `make release` will compile the code.
 7. Upon success, you will see a **QR Code**. Open FBI on your 3DS -> **Remote Install** -> **Scan QR Code**, and the console will wirelessly download and install your custom `.cia` directly from your local server!

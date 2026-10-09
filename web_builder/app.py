@@ -77,7 +77,7 @@ def success():
         return render_template("error.html", error_message="The .cia file was not found in the dist directory. Compilation might have failed silently."), 404
 
     local_ip = get_local_ip()
-    download_url = f"http://{local_ip}:5000/download/cia"
+    download_url = f"http://{local_ip}:5050/download/cia"
     qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={download_url}"
 
     return render_template("success.html", download_url=download_url, qr_url=qr_url)
@@ -95,14 +95,14 @@ if __name__ == "__main__":
     print("="*50)
     print(" FIRELEAF 3DS WEB BUILDER SERVER ")
     print("="*50)
-    print(f"[+] Website running on: http://{ip}:5000")
+    print(f"[+] Website running on: http://{ip}:5050")
     print(f"[+] Listening for incoming connections...")
     print("="*50)
     
     # Auto-open browser
     def open_browser():
-        webbrowser.open_new(f"http://127.0.0.1:5000/")
+        webbrowser.open_new(f"http://{ip}:5050/")
     
     Timer(1.25, open_browser).start()
     
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5050, debug=False)
