@@ -1,12 +1,18 @@
 #!/bin/bash
-echo "Starting local Web Builder server..."
+# Move to the directory where this script is located
+cd "$(dirname "$0")"
 
-# Check if Flask is installed
-if ! python3 -c "import flask" &> /dev/null; then
-    echo "Installing Flask framework..."
-    python3 -m pip install flask
+echo "=================================================="
+echo " Starting FireLeaf 3DS Web Builder... "
+echo "=================================================="
+
+if [ ! -d ".venv" ]; then
+    echo "Creating isolated Python environment..."
+    python3 -m venv .venv
 fi
+source .venv/bin/activate
 
-# Run the web application
+pip install flask --quiet
+
 cd web_builder
-python3 app.py
+python app.py

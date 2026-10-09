@@ -6,12 +6,16 @@ echo "=================================================="
 echo " Starting FireLeaf 3DS Web Builder... "
 echo "=================================================="
 
-# Check if Flask is installed
-if ! python3 -c "import flask" &> /dev/null; then
-    echo "Installing Flask framework..."
-    python3 -m pip install flask
+# Create and activate virtual environment
+if [ ! -d ".venv" ]; then
+    echo "Creating isolated Python environment..."
+    python3 -m venv .venv
 fi
+source .venv/bin/activate
+
+# Install Flask quietly
+pip install flask --quiet
 
 # Run the web application
 cd web_builder
-python3 app.py
+python app.py
