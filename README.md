@@ -39,11 +39,10 @@ You must have **devkitARM** (via devkitPro) and **Python 3** installed on your s
 **Instructions:**
 1. Clone the repository to your local machine.
 2. Open your terminal (On Windows, use the **MSYS2** terminal provided by devkitPro).
-3. Run the setup script from the root folder:
-   ```sh
-   ./start_web_builder.sh
-   ```
-   *(If you are on pure Windows without bash, you can simply run `python web_builder/app.py`)*
+3. Run the setup script from the root folder depending on your OS:
+   - **Windows**: Double-click `Start_Web_Builder.bat`
+   - **macOS**: Double-click `Start_Web_Builder.command`
+   - **Linux**: Run `./start_web_builder.sh` in the terminal
 4. Open your browser and navigate to `http://127.0.0.1:5000` (or the IP displayed in the console).
 5. Use the sleek, dark-themed UI to upload your `.gba` ROM and click **Generate Game**.
 6. The Python scripts will validate your ROM's SHA1 hash, extract assets, and `make release` will compile the code.
