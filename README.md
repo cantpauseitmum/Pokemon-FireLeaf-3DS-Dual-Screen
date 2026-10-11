@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="3ds_port/assets/artwork/logo.png" alt="Pokémon FireLeaf 3DS Dual Screen" width="480">
-</p>
-
 <h1 align="center">Pokémon FireLeaf 3DS Dual Screen</h1>
 
 <p align="center">
@@ -10,6 +6,25 @@
 </p>
 
 ---
+
+## Current Build Status
+
+| Component / Feature | Status | Notes |
+| :--- | :--- | :--- |
+| **Title Screen & Intro** | Working | Smooth 60 FPS, proper dual-screen layout |
+| **Game Controls Guide** | Working | Intro guide displays and advances properly |
+| **Oak Dialogue Sequence** | Working | Text boxes and dialogue engine operational |
+| **Character Naming Screen** | Working | Keyboard input, name selection, and Oak response functional |
+| **Font & Glyph Rendering** | Working | Fixed text corruption; all glyphs render cleanly |
+| **Audio (Hardware 3DS)** | Working | NDSP stereo audio output functioning on console |
+| **Audio (Citra / Azahar Emulator)** | Audio setup | Requires DSP firmware dump (`dspfirm.cdc`) in emulator sysdata |
+| **Save Engine** | Working | Flash save/load hooks integrated |
+| **Intro Character Sprites** | In Progress | Oak and Rival sprite rendering in intro sequence under investigation |
+| **Naming Screen Preview Sprite** | In Progress | Character portrait preview during name input |
+| **Post-Dialogue Overworld Transition** | In Progress | Resolving black screen when stepping out of intro into Pallet Town |
+| **Voxel 3D Mode** | In Progress | 3D terrain rendering pipeline for Kanto map tiles |
+| **Local WLAN Multiplayer (UDS)** | In Progress | Wireless adapter bridge protocol translation |
+
 
 Pokémon FireLeaf 3DS brings the classic GBA adventure to the Nintendo 3DS as **native homebrew** (no emulation involved). The game runs smoothly on the top screen, while the bottom display takes over the START menu logic, introducing fully reconstructed, Citro2D-powered versions of the **Fame Checker**, **Teachy TV**, and an interactive help system.
 

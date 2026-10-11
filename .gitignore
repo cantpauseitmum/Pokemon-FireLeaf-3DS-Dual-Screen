@@ -16,6 +16,7 @@
 *.lz
 *.til
 *.pcm
+!sound/programmable_wave_samples/*.pcm
 *.rl
 
 # ROMs, ELFs, Maps, Objects
