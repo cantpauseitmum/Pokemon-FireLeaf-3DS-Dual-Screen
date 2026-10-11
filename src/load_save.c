@@ -43,6 +43,7 @@ COMMON_DATA struct SaveBlock1 *gSaveBlock1Ptr = NULL;
 COMMON_DATA struct SaveBlock2 *gSaveBlock2Ptr = NULL;
 COMMON_DATA struct PokemonStorage *gPokemonStoragePtr = NULL;
 
+#ifndef PORTABLE
 void CheckForFlashMemory(void)
 {
     if (!IdentifyFlash())
@@ -55,6 +56,7 @@ void CheckForFlashMemory(void)
         gFlashMemoryPresent = FALSE;
     }
 }
+#endif
 
 void ClearSav2(void)
 {

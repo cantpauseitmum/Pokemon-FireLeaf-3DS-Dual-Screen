@@ -16,7 +16,7 @@ GAME_ARCH := $(ARCH)
 ASM_PSEUDO_OP_CONV := sed -e 's/\.4byte/\.int/g;s/\.2byte/\.short/g'
 AS := $(DEVKITARM)/bin/arm-none-eabi-as
 CPPTOOL := $(DEVKITARM)/bin/arm-none-eabi-cpp
-ASFLAGS := -mcpu=mpcore --defsym MODERN=1 --defsym PORTABLE=1 --defsym UBFIX=1 -I$(ROOT)
+ASFLAGS := -mcpu=mpcore --defsym MODERN=1 --defsym PORTABLE=1 --defsym UBFIX=1 --defsym REVISION=1 --defsym ENGLISH=1 -I$(ROOT)
 
 # Game translation units see the port bridge (compat/port_platform.h): the
 # hooks in the shared tree that route resources, scripts and saves to the
@@ -32,7 +32,7 @@ FULLCFLAGS := $(GAME_ARCH) $(filter-out $(ARCH),$(GAMECFLAGS))
 
 ROOT_C_SRCS := $(wildcard $(ROOT)/src/*.c $(ROOT)/src/*/*.c $(ROOT)/src/*/*/*.c)
 # GBA-only link/multiboot programs; 3ds_compat.c provides their entry points.
-ROOT_C_SRCS := $(filter-out $(ROOT)/src/berry_fix_program.c $(ROOT)/src/ereader_screen.c $(ROOT)/src/mystery_gift_menu.c $(ROOT)/src/mystery_event_menu.c,$(ROOT_C_SRCS))
+ROOT_C_SRCS := $(filter-out $(ROOT)/src/berry_fix_program.c $(ROOT)/src/ereader_screen.c $(ROOT)/src/mystery_gift_menu.c $(ROOT)/src/mystery_event_menu.c $(ROOT)/src/librfu%.c,$(ROOT_C_SRCS))
 
 ROOT_DATA_SRCS := $(wildcard $(ROOT)/data/*.s)
 ROOT_DATA_SRCS := $(filter-out $(ROOT)/data/multiboot_berry_glitch_fix.s $(ROOT)/data/multiboot_ereader.s \
@@ -41,7 +41,7 @@ ROOT_DATA_SRCS := $(filter-out $(ROOT)/data/multiboot_berry_glitch_fix.s $(ROOT)
 ROOT_DATA_SRCS := $(filter-out $(ROOT)/data/maps.s,$(ROOT_DATA_SRCS))
 # Script sections are assembled but not linked: their pointers are unaligned,
 # so they move to RomFS and land in a reserved region (gen_script_bundle.py).
-SCRIPT_DATA_SRCS := battle_ai_scripts battle_anim_scripts battle_scripts_1 battle_scripts_2 	contest_ai_scripts event_scripts field_effect_scripts
+SCRIPT_DATA_SRCS := battle_ai_scripts battle_anim_scripts battle_scripts_1 battle_scripts_2 event_scripts field_effect_scripts
 SCRIPT_DATA_OBJS := $(patsubst %,build/root/data/%.o,$(SCRIPT_DATA_SRCS))
 ROOT_DATA_SRCS := $(filter-out $(patsubst %,$(ROOT)/data/%.s,$(SCRIPT_DATA_SRCS)),$(ROOT_DATA_SRCS))
 
@@ -113,7 +113,7 @@ ROMFS_SHADER_OUTS += romfs/voxel/buildings.bin
 ROMFS_SHADER_OUTS += romfs/voxel/relief.bin
 endif
 # New art around the intro's leaves scene (scripts/gen_intro_margins.py).
-ROMFS_SHADER_OUTS += romfs/stage/leaves.bin
+#ROMFS_SHADER_OUTS += romfs/stage/leaves.bin
 # The bottom screen's battle menus: the port's own art (scripts/gen_battle_art.py).
 ROMFS_SHADER_OUTS += romfs/bottom/battle.bin
 
@@ -139,14 +139,13 @@ build/root/%.o: $(ROOT)/%.c Makefile full.mk
 
 # Screens staged as one whole GBA picture: GBA geometry, and their VBlank
 # callbacks reported to the bridge (compat/ctr_gba_stage.h).
-CTR_GBA_STAGE_SRCS := intro title_screen credits intro_credits_graphics
+CTR_GBA_STAGE_SRCS := credits intro_credits_graphics
 CTR_GBA_STAGE_OBJS := $(patsubst %,build/root/src/%.o,$(CTR_GBA_STAGE_SRCS))
 $(CTR_GBA_STAGE_OBJS): FULLCFLAGS += -DCTR_GBA_STAGE -include $(abspath compat/ctr_gba_stage.h)
 $(CTR_GBA_STAGE_OBJS): compat/ctr_gba_stage.h $(ROOT)/include/gba/defines.h
 # GBA screens shown centred, margins only from layers that wrap on the GBA
 # (compat/ctr_gba_centred.h).
-CTR_GBA_CENTRED_SRCS := region_map field_region_map main_menu naming_screen wallclock \
-	pokemon_summary_screen starter_choose
+CTR_GBA_CENTRED_SRCS := title_screen intro region_map field_region_map main_menu naming_screen wallclock pokemon_summary_screen starter_choose oak_speech trainer_card option_menu diploma hall_of_fame clear_save_data_screen shop easy_chat_2 learn_move wireless_communication_status_screen mail seagallop battle_records daycare trade_scene slot_machine item_pc teachy_tv tm_case pokemon_jump fame_checker union_room_battle berry_pouch dodrio_berry_picking union_room_chat trade
 CTR_GBA_CENTRED_OBJS := $(patsubst %,build/root/src/%.o,$(CTR_GBA_CENTRED_SRCS))
 $(CTR_GBA_CENTRED_OBJS): FULLCFLAGS += -DCTR_GBA_STAGE -include $(abspath compat/ctr_gba_centred.h)
 $(CTR_GBA_CENTRED_OBJS): compat/ctr_gba_centred.h $(ROOT)/include/gba/defines.h
@@ -222,13 +221,13 @@ build/root/data/maps.o: build/maps.s build/map_layouts.inc $(ROOT)/data/layouts/
 		$(ROOT)/data/maps/headers.inc $(ROOT)/data/maps/groups.inc $(ROOT)/data/maps/connections.inc
 	@mkdir -p $(dir $@)
 	cd $(ROOT) && "$(PREPROC)" 3ds_port/build/maps.s charmap.txt | "$(CPPTOOL)" -Iinclude -I. - \
-		| "$(PREPROC)" -ie 3ds_port/build/maps.s charmap.txt | $(ASM_PSEUDO_OP_CONV) - \
+		| "$(PREPROC)" -ie 3ds_port/build/maps.s charmap.txt | $(ASM_PSEUDO_OP_CONV) \
 		| "$(AS)" $(ASFLAGS) -o $(CURDIR)/$@
 
 build/root/data/%.o: $(ROOT)/data/%.s Makefile full.mk
 	@mkdir -p $(dir $@)
 	cd $(ROOT) && "$(PREPROC)" data/$*.s charmap.txt | "$(CPPTOOL)" -Iinclude -I. - \
-		| "$(PREPROC)" -ie data/$*.s charmap.txt | $(ASM_PSEUDO_OP_CONV) - \
+		| "$(PREPROC)" -ie data/$*.s charmap.txt | $(ASM_PSEUDO_OP_CONV) \
 		| "$(AS)" $(ASFLAGS) -o $(CURDIR)/$@
 
 # The samples are .incbin'd from paths relative to the repository root, and the
@@ -240,7 +239,7 @@ else
 SAMPLE_OVERLAY_SED := $(foreach f,$(SAMPLE_OVERLAY),-e 's\#"sound/direct_sound_samples/\(cries/\)\{0,1\}$(notdir $(f))"\#"$(f)"\#')
 build/root/data/sound_data.o: $(ROOT)/data/sound_data.s $(ROOT_SOUND_BIN_SRCS) $(SAMPLE_OVERLAY) Makefile full.mk
 	@mkdir -p $(dir $@)
-	cd $(ROOT) && "$(PREPROC)" data/sound_data.s charmap.txt | "$(CPPTOOL)" -Iinclude -I. - 		| "$(PREPROC)" -ie data/sound_data.s charmap.txt | $(ASM_PSEUDO_OP_CONV) - 		| sed $(SAMPLE_OVERLAY_SED) | "$(AS)" $(ASFLAGS) -o $(CURDIR)/$@
+	cd $(ROOT) && "$(PREPROC)" data/sound_data.s charmap.txt | "$(CPPTOOL)" -Iinclude -I. - 		| "$(PREPROC)" -ie data/sound_data.s charmap.txt | $(ASM_PSEUDO_OP_CONV) 		| sed $(SAMPLE_OVERLAY_SED) | "$(AS)" $(ASFLAGS) -o $(CURDIR)/$@
 endif
 
 build/root/sound/songs/%.o: $(ROOT)/sound/songs/%.s
@@ -329,13 +328,13 @@ build/root/3ds_song_blob.o: build/3ds_song_blob.s
 
 $(ROMFS_SCRIPT_OUTS) &: $(TARGET).elf $(SCRIPT_DATA_OBJS) scripts/gen_script_bundle.py
 	@mkdir -p romfs/scripts
-	"$(PYTHON)" scripts/gen_script_bundle.py --port-dir . --bundle --out-dir romfs/scripts
+	"$(PYTHON)" scripts/gen_script_bundle.py --port-dir . --bundle --out-dir romfs/scripts --elf $(CURDIR)/$(TARGET).elf
 	"$(PYTHON)" scripts/verify_scripts.py --elf $(TARGET).elf --out-dir romfs/scripts
 
 $(ROMFS_SOUND_OUTS) &: $(TARGET).elf $(ROOT_SONG_OBJS) scripts/gen_sound_bundle.py
 	@mkdir -p romfs/sound
-	"$(PYTHON)" scripts/gen_sound_bundle.py --port-dir . --bundle --out-dir romfs/sound
-	"$(PYTHON)" scripts/verify_scripts.py --elf $(TARGET).elf --out-dir romfs/sound 		--tag verify_songs --magic C3AB --payload songs.bin --reloc songs.rel 		--blob-symbol __ctr_song_blob --require mus_dummy --require mus_littleroot
+	"$(PYTHON)" scripts/gen_sound_bundle.py --port-dir . --bundle --out-dir romfs/sound --elf $(CURDIR)/$(TARGET).elf
+	"$(PYTHON)" scripts/verify_scripts.py --elf $(TARGET).elf --out-dir romfs/sound 		--tag verify_songs --magic C3AB --payload songs.bin --reloc songs.rel 		--blob-symbol __ctr_song_blob --require mus_dummy --require mus_pallet
 
 # The game's linked read-only data: identical layout in both links, contents
 # from the image, reserved NOLOAD in the executable.
@@ -373,7 +372,7 @@ VOXEL_GFX_OUTPUTS += $(patsubst %.pal,%.gbapal,$(filter %.pal,$(VOXEL_GFX_SOURCE
 ifneq ($(strip $(VOXEL_GFX_OUTPUTS)),)
 $(VOXEL_GFX_OUTPUTS) &: $(VOXEL_GFX_SOURCES)
 	+$(MAKE) -C $(ROOT) $(patsubst $(ROOT)/%,%,$(VOXEL_GFX_OUTPUTS))
-romfs/voxel/regions.bin romfs/voxel/signposts.bin romfs/voxel/buildings.bin romfs/voxel/relief.bin romfs/stage/leaves.bin: $(VOXEL_GFX_OUTPUTS)
+romfs/voxel/regions.bin romfs/voxel/signposts.bin romfs/voxel/buildings.bin romfs/voxel/relief.bin: $(VOXEL_GFX_OUTPUTS)
 endif
 
 ifeq ($(VOXEL),1)

@@ -10,6 +10,7 @@ const struct FlashSetupInfo * const sSetupInfos[] =
     &DefaultFlash
 };
 
+#ifndef PORTABLE
 u16 IdentifyFlash(void)
 {
     u16 result;
@@ -47,6 +48,7 @@ u16 IdentifyFlash(void)
 
     return result;
 }
+#endif
 
 u16 WaitForFlashWrite_Common(u8 phase, u8 *addr, u8 lastData)
 {

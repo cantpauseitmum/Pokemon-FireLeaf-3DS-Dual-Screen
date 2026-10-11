@@ -1547,6 +1547,9 @@ SPECS = [
         "rect": (7, 7, 10, 9),
         "ground": [0x2BB, 0x2C3, GRASS],
         "parts": devon,
+    }
+]
+
 SPECS = [
     {
         # Kanto Pokemon Center 1F

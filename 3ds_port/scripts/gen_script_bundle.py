@@ -32,7 +32,7 @@ SCRIPT_OBJECTS = [
     "data/battle_anim_scripts.o",
     "data/battle_scripts_1.o",
     "data/battle_scripts_2.o",
-    "data/contest_ai_scripts.o",
+    
     "data/event_scripts.o",
     "data/field_effect_scripts.o",
 ]

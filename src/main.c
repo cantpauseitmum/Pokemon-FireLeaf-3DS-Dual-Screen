@@ -37,7 +37,7 @@ const u8 gGameVersion = GAME_VERSION;
 
 const u8 gGameLanguage = GAME_LANGUAGE;
 
-#if MODERN
+#if MODERN && !defined(PLATFORM_3DS)
 const char BuildDateTime[] = __DATE__ " " __TIME__;
 #else
 #if REVISION == 0
@@ -102,7 +102,7 @@ void AgbMain()
 #if REVISION >= 0xA
     svc_stubbed();
 #endif
-#if MODERN
+#if MODERN && !defined(PLATFORM_3DS)
     // Modern compilers are liberal with the stack on entry to this function,
     // so RegisterRamReset may crash if it resets IWRAM.
     RegisterRamReset(RESET_ALL & ~RESET_IWRAM);
@@ -149,10 +149,12 @@ void AgbMain()
     InitRFU();
     CheckForFlashMemory();
 #else
-    // Port 3DS - inicjalizacja sprzętu jest przeprowadzona po stronie main_3ds.c
-    InitGpuRegManager(); // Manager rejestrów nadal potrzebny do gMain
+    InitGpuRegManager();
     InitKeys();
-    InitMainCallbacks(); // Zabezpieczenie podstawowe
+    InitIntrHandlers();
+    m4aSoundInit();
+    EnableVCountIntrAtLine150();
+    gFlashMemoryPresent = TRUE;
 #endif
     InitMainCallbacks();
     InitMapMusic();
@@ -220,12 +222,7 @@ void AgbMain()
 
         PlayTimeCounter_Update();
         MapMusicMain();
-#ifdef PLATFORM_3DS
-        extern void CtrVBlankHook(void);
-        CtrVBlankHook();
-#else
         WaitForVBlank();
-#endif
     }
 }
 
@@ -307,7 +304,12 @@ void InitKeys(void)
 
 static void ReadKeys(void)
 {
+#ifndef PLATFORM_3DS
     u16 keyInput = REG_KEYINPUT ^ KEYS_MASK;
+#else
+    extern u16 Platform_GetKeyInput(void);
+    u16 keyInput = Platform_GetKeyInput();
+#endif
     gMain.newKeysRaw = keyInput & ~gMain.heldKeysRaw;
     gMain.newKeys = gMain.newKeysRaw;
     gMain.newAndRepeatedKeys = gMain.newKeysRaw;
@@ -356,9 +358,11 @@ void InitIntrHandlers(void)
     for (i = 0; i < INTR_COUNT; i++)
         gIntrTable[i] = gIntrTableTemplate[i];
 
+#ifndef PLATFORM_3DS
     DmaCopy32(3, intr_main, IntrMain_Buffer, sizeof(IntrMain_Buffer));
 
     INTR_VECTOR = IntrMain_Buffer;
+#endif
 
     SetVBlankCallback(NULL);
     SetHBlankCallback(NULL);
@@ -409,6 +413,10 @@ static void VBlankIntr(void)
 
     CopyBufferedValuesToGpuRegs();
     ProcessDma3Requests();
+
+#ifdef PLATFORM_3DS
+    m4aSoundVSync();
+#endif
 
     gPcmDmaCounter = gSoundInfo.pcmDmaCounter;
 
@@ -473,10 +481,14 @@ static void IntrDummy(void)
 
 static void WaitForVBlank(void)
 {
+#ifdef PLATFORM_3DS
+    VBlankIntrWait();
+#else
     gMain.intrCheck &= ~INTR_FLAG_VBLANK;
 
     while (!(gMain.intrCheck & INTR_FLAG_VBLANK))
         ;
+#endif
 }
 
 void SetVBlankCounter1Ptr(u32 *ptr)

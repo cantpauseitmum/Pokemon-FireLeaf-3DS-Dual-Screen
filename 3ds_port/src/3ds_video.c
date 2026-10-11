@@ -2010,8 +2010,7 @@ typedef struct
 
 static const CentredFill sCentredFills[CTR_CENTRED_SCREENS] =
 {
-    [CTR_CENTRED_MAIN_MENU] = {.layers = 1u << 1, .across = true, .skyRows = 4, .bandRow = 14, .bandChars = 3,
-                               .bandX = -4, .bandY = 32},
+    [CTR_CENTRED_MAIN_MENU] = {0},
     /* Inside the yellow border; the title bar is its top row. */
     [CTR_CENTRED_NAMING] = {.layers = 1u << 3, .inset = {2, 0, 2, 1}},
     [CTR_CENTRED_CLOCK] = {.layers = 1u << 3},
@@ -5436,6 +5435,14 @@ static void RenderEye(C3D_RenderTarget *target, uint32_t clear, float parallax)
         C2D_ViewReset();
         Blend(5, false, false);
         C2D_DrawImageAt((C2D_Image){&sSurface, &logical}, 0, 0, 0, NULL, 1, 1);
+        if (sCentred || sStage)
+        {
+            u32 black = C2D_Color32(0, 0, 0, 255);
+            C2D_DrawRectSolid(0, 0, 0, CTR_STAGE_X, CTR_GAME_HEIGHT, black);
+            C2D_DrawRectSolid(CTR_STAGE_X + 240, 0, 0, CTR_STAGE_X, CTR_GAME_HEIGHT, black);
+            C2D_DrawRectSolid(0, 0, 0, CTR_GAME_WIDTH, CTR_STAGE_Y, black);
+            C2D_DrawRectSolid(0, CTR_STAGE_Y + 160, 0, CTR_GAME_WIDTH, CTR_STAGE_Y, black);
+        }
     }
     C2D_Flush();
     C3D_FrameSplit(0);
@@ -8208,7 +8215,7 @@ void CtrVideo_Present(void)
     /* The shown backdrop, faded: sPalette may hold the unfaded one. */
     uint16_t backdrop = (Reg(0) & 128) ? 0x7fff : sMemory.palette[0] & 0x7fff;
     uint32_t rgb = CtrVideo_RGBA8(backdrop, true);
-    uint32_t clear = C2D_Color32(rgb >> 24, rgb >> 16, rgb >> 8, 255);
+    uint32_t clear = (sStage || sCentred) ? C2D_Color32(0, 0, 0, 255) : C2D_Color32(rgb >> 24, rgb >> 16, rgb >> 8, 255);
     sBackdropShown = clear;
     /*
      * The 3D slider decides the separation, and at zero the right eye is not

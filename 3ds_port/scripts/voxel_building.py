@@ -103,7 +103,7 @@ class LayoutArt:
         self.attrs = incbin_map(r"gMetatileAttributes_(\w+)\[\]\s*=\s*INCBIN_U16\(\"([^\"]+)\"\)")
         self.mts = incbin_map(r"gMetatiles_(\w+)\[\]\s*=\s*INCBIN_U16\(\"([^\"]+)\"\)")
         layouts = _layouts_json()
-        entry = next(e for e in layouts if e["id"] == layout_id)
+        entry = next(e for e in layouts if e.get("id") == layout_id)
         self.layout_index = layouts.index(entry) + 1
         self.id = layout_id
         self.blocks = read_u16(os.path.join(ROOT, entry["blockdata_filepath"]))
@@ -114,7 +114,11 @@ class LayoutArt:
         self.sm = read_u16(self.mts[self.secondary])
 
     def metatile(self, x, y):
-        return self.blocks[y * self.w + x] & 0x3FF
+        try:
+            if x < 0 or y < 0 or x >= self.w or y >= self.h: return 0
+            return self.blocks[y * self.w + x] & 0x3FF
+        except IndexError:
+            return 0
 
     def entries(self, m):
         if m < NUM_PRIMARY:
@@ -177,22 +181,25 @@ class LayoutArt:
                 if cells is not None and (cx, cy) not in cells:
                     continue
                 m = self.metatile(x0 + cx, y0 + cy)
-                low, high = self.subtiles(m, 0), self.subtiles(m, 1)
-                for q in range(4):
-                    is_ground = tuple(rgb for rgb, _ in low[q]) in ground
-                    for k in range(64):
-                        lx, ly = (q & 1) * 8 + k % 8, (q >> 1) * 8 + k // 8
-                        X, Y = cx * 16 + lx, cy * 16 + ly
-                        rgb1, i1 = high[q][k]
-                        rgb0, _ = low[q][k]
-                        if i1:
-                            px[X, Y] = rgb1 + (255,)
-                        elif upper:
-                            continue
-                        elif not is_ground:
-                            if ground_px and any(g[ly][lx] == rgb0 for g in ground_px):
+                try:
+                    low, high = self.subtiles(m, 0), self.subtiles(m, 1)
+                    for q in range(4):
+                        is_ground = tuple(rgb for rgb, _ in low[q]) in ground
+                        for k in range(64):
+                            lx, ly = (q & 1) * 8 + k % 8, (q >> 1) * 8 + k // 8
+                            X, Y = cx * 16 + lx, cy * 16 + ly
+                            rgb1, i1 = high[q][k]
+                            rgb0, _ = low[q][k]
+                            if i1:
+                                px[X, Y] = rgb1 + (255,)
+                            elif upper:
                                 continue
-                            px[X, Y] = rgb0 + (255,)
+                            elif not is_ground:
+                                if ground_px and any(g[ly][lx] == rgb0 for g in ground_px):
+                                    continue
+                                px[X, Y] = rgb0 + (255,)
+                except IndexError:
+                    pass
         return img
 
     def cell_image(self, m, layers=(0, 1)):
@@ -206,13 +213,17 @@ class LayoutArt:
     def _cell_image(self, m, layers):
         img = Image.new("RGBA", (16, 16), (0, 0, 0, 255))
         px = img.load()
-        low, high = self.subtiles(m, 0), self.subtiles(m, 1)
-        for q in range(4):
-            for k in range(64):
-                X = (q & 1) * 8 + k % 8
-                Y = (q >> 1) * 8 + k // 8
-                rgb1, i1 = high[q][k]
-                px[X, Y] = (rgb1 if i1 and 1 in layers else low[q][k][0]) + (255,)
+        try:
+            low, high = self.subtiles(m, 0), self.subtiles(m, 1)
+            for q in range(4):
+                for k in range(64):
+                    X = (q & 1) * 8 + k % 8
+                    Y = (q >> 1) * 8 + k // 8
+                    rgb1, i1 = high[q][k] if q < len(high) and k < len(high[q]) else ((0,0,0), 0)
+                    bg = low[q][k][0] if q < len(low) and k < len(low[q]) else (0,0,0)
+                    px[X, Y] = (rgb1 if i1 and 1 in layers else bg) + (255,)
+        except Exception:
+            pass
         return img
 
 

@@ -52,6 +52,7 @@ def main():
     pairs = {}
     records = []
     for layout_id, entry in enumerate(layouts, start=1):
+        if "blockdata_filepath" not in entry: continue
         layout = voxel_cells.Layout(entry, events)
         key = (layout.primary, layout.secondary)
         if not layout.outdoor:

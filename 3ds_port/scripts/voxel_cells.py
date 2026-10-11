@@ -53,21 +53,14 @@ COVER_SLACK = 2
 
 
 def behaviours():
-    """Metatile behaviour values by name, counted off the enum in
-    include/constants/metatile_behaviors.h."""
+    import re
     text = open(os.path.join(ROOT, "include", "constants", "metatile_behaviors.h"),
                 encoding="utf-8").read()
-    body = text[text.index("{") + 1:text.index("}")]
-    values, value = {}, 0
-    for item in body.split(","):
-        item = re.sub(r"//.*", "", item).strip()
-        if not item:
-            continue
-        m = re.match(r"(\w+)\s*(?:=\s*(\w+))?", item)
-        if m.group(2):
-            value = int(m.group(2), 0)
-        values[m.group(1)] = value
-        value += 1
+    values = {}
+    for line in text.splitlines():
+        m = re.match(r"^#define\s+(MB_\w+)\s+(0x[0-9a-fA-F]+|\d+)", line)
+        if m:
+            values[m.group(1)] = int(m.group(2), 0)
     return values
 
 

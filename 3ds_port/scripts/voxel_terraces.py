@@ -1290,7 +1290,11 @@ def solve(layout_id, reference=None):
     """The terraces of the group a layout is drawn in. `reference`: a parsed
     relief.bin whose world placement is kept."""
     members = group_of(layout_id)
-    c = Cells(members)
+    try:
+        c = Cells(members)
+    except (StopIteration, ValueError):
+        print(f'Skipping {layout_id} due to missing data')
+        return None
     runs = runs_of(c)
     comp = terraces(c, runs)
     ref = reference_heights(reference, members) if reference is not None else None
@@ -1640,6 +1644,8 @@ def apply_file(path, layouts=None, quiet=False):
         if lid in done:
             continue
         sol = solve(lid, reference)
+        if sol is None:
+            continue
         done.update(m[0] for m in sol["cells"].members)
         merge(sol, relief)
         if not quiet:

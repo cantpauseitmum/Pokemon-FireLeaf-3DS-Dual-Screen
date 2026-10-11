@@ -51,6 +51,7 @@
 #include <string.h>
 
 #include "global.h"
+#include "constants/moves.h"
 #include "3ds_locale.h"
 #include "main.h"
 #include "money.h"
@@ -59,7 +60,9 @@
 #include "battle_controllers.h"
 #include "battle_main.h"
 #include "battle_message.h"
-// #include "contest_util.h"
+#ifndef FIRERED
+#include "contest_util.h"
+#endif
 #include "data.h"
 #include "event_data.h"
 #include "field_player_avatar.h"
@@ -67,7 +70,7 @@
 #include "fonts.h"
 #include "graphics.h"
 #include "item.h"
-#include "item_icon.h"
+#include "item_menu_icons.h"
 #include "item_menu.h"
 #include "menu.h"
 #include "new_game.h"
@@ -78,7 +81,9 @@
 #include "pokemon.h"
 #include "pokemon_icon.h"
 #include "pokemon_summary_screen.h"
-// #include "pokenav.h"
+#ifndef FIRERED
+#include "pokenav.h"
+#endif
 #include "region_map.h"
 #include "safari_zone.h"
 #include "save.h"
@@ -120,12 +125,12 @@ void CtrStartMenu_Request(u8 action);
 bool8 CtrStartMenu_Pending(void);
 bool8 CtrStartMenu_Available(void);
 bool8 CtrStartMenu_Busy(void);
-/* bool8 CtrPokenav_IsOpen(void);
-/* u32 CtrPokenav_Screen(bool8 *ready);
-/* int CtrPokenavMenu_Options(int *cursor);
-/* void CtrPokenavMenu_Rows(int *yStart, int *deltaY);
+bool8 CtrPokenav_IsOpen(void);
+u32 CtrPokenav_Screen(bool8 *ready);
+int CtrPokenavMenu_Options(int *cursor);
+void CtrPokenavMenu_Rows(int *yStart, int *deltaY);
 bool8 CtrPokenavList_View(u8 *x, u8 *y, u8 *width, u16 *top, u16 *selected, u16 *shown, u16 *count);
-/* u8 CtrPokenavMatchCall_Input(u16 *cursor, u16 *count);
+u8 CtrPokenavMatchCall_Input(u16 *cursor, u16 *count);
 bool8 CtrPokenavRibbons_Summary(u16 *selected, u16 *normal, u16 *gift, u16 *giftStart, bool8 *expanded);
 bool8 CtrRegionMap_Cursor(s16 *x, s16 *y, bool8 *zoomed, bool8 *moving);
 bool8 CtrMonMarkings_Menu(s8 *cursor, s16 *x, s16 *y);
@@ -150,7 +155,7 @@ void SetPokemonCryStereo(u32 val);
 extern const struct PokedexEntry gPokedexEntries[];
 
 /* start_menu.c's MENU_ACTION_* (the enum is private to that file). */
-enum { START_POKEDEX, START_POKEMON, START_BAG, START_OPTION, START_NONE = 0xFF };
+enum { START_POKEDEX, START_POKEMON, START_BAG, START_POKENAV, START_NONE = 0xFF };
 
 #define W CTR_BOTTOM_WIDTH
 #define H CTR_BOTTOM_HEIGHT
@@ -191,7 +196,7 @@ static int sClipX0, sClipY0, sClipX1 = W, sClipY1 = H;
 static bool8 ClipIsFull(void)
 {
     return sClipX0 == 0 && sClipY0 == 0 && sClipX1 == W && sClipY1 == H;
-} */ */ */ */ */
+}
 
 static void CopyCache(int which)
 {
@@ -257,40 +262,8 @@ typedef struct { u16 c[16]; } Pal;
 static void ToPals(Pal *dst, const u16 *src, int count)
 {
     for (int p = 0; p < count; ++p)
-    {
         for (int i = 0; i < 16; ++i)
-        {
-            u16 color = src[p * 16 + i];
-            
-            // Dekodowanie 15-bitowego RGB z GBA (Wartości 0-31)
-            int r = color & 31;
-            int g = (color >> 5) & 31;
-            int b = (color >> 10) & 31;
-
-            // Filtracja "Emerald to FireRed" (ZallaxDev Theme Shifter)
-            // Jeśli zielony jest kanałem dominującym (Motyw Hoenn)
-            if (g > r + 3 && g > b) 
-            {
-                // Zamieniamy zielony na czerwień (Kanto Red) i obniżamy zielony by uzyskać pomarańcz/czerwień
-                int tempR = g;
-                int tempG = r + (g / 3); // Lekki odcień pomarańczy
-                int tempB = b;
-                
-                // Ochrona przed przepełnieniem 5-bitowej palety
-                if (tempR > 31) tempR = 31;
-                if (tempG > 31) tempG = 31;
-
-                r = tempR;
-                g = tempG;
-                b = tempB;
-                
-                // Rekonstrukcja koloru
-                color = r | (g << 5) | (b << 10);
-            }
-
-            dst[p].c[i] = Rgb565(color);
-        }
-    }
+            dst[p].c[i] = Rgb565(src[p * 16 + i]);
 }
 
 static void DarkPal(Pal *dst, const Pal *src)
@@ -450,7 +423,7 @@ static void PalSymbol(const void *src, Pal *dst, int count)
 }
 
 /* The screens of the button column, top to bottom. */
-enum { SCR_MAP, SCR_POKEMON, SCR_BAG, SCR_CARD, SCR_POKEDEX, SCR_FAMECHECKER, SCR_SAVE, SCR_OPTION, SCR_COUNT };
+enum { SCR_MAP, SCR_POKEMON, SCR_BAG, SCR_CARD, SCR_POKEDEX, SCR_POKENAV, SCR_SAVE, SCR_OPTION, SCR_COUNT };
 /* Below the screens' buttons: the registered item (Y) and RUN. */
 enum { COL_Y = SCR_COUNT, COL_RUN, COL_ITEMS };
 
@@ -542,10 +515,10 @@ static void LoadGenderResources(void)
 {
     for (u8 gender = MALE; gender <= FEMALE; ++gender)
     {
-        u16 pic = gFacilityClassToPicIndex[gender == FEMALE ? FACILITY_CLASS_LEAF : FACILITY_CLASS_RED];
+        u16 pic = gFacilityClassToPicIndex[gender == FEMALE ? FACILITY_CLASS_MAY : FACILITY_CLASS_BRENDAN];
         u16 *pal = Unlz(gTrainerFrontPicPaletteTable[pic].data, NULL);
         u32 size = 0;
-        u8 *all = Unlz(gender == FEMALE ? gBagFemaleTiles : gBagMaleTiles, &size);
+        u8 *all = Unlz(gender == FEMALE ? gBagFemale_Gfx : gBagMale_Gfx, &size);
 
         sRes.trainerPic[gender] = Unlz(gTrainerFrontPicTable[pic].data, NULL);
         if (pal)
@@ -559,7 +532,7 @@ static void LoadGenderResources(void)
         free(all);
     }
     {
-        u16 *pal = Unlz(gBagPalette, NULL);
+        u16 *pal = Unlz(gBag_Pal, NULL);
         if (pal)
         {
             ToPals(&sRes.bagPal, pal, 1);
@@ -619,9 +592,9 @@ static void LoadResources(void)
     LoadItemIcon(&sRes.column[SCR_POKEDEX], gItemIcon_FameChecker, gItemIconPalette_FameChecker);
     LoadItemIcon(&sRes.column[SCR_SAVE], GetItemIconPicOrPalette(ITEM_LETTER, 0), GetItemIconPicOrPalette(ITEM_LETTER, 1));
     LoadItemIcon(&sRes.column[SCR_OPTION], gItemIcon_TeachyTV, gItemIconPalette_TeachyTV);
-    sRes.column[SCR_FAMECHECKER].tiles = UnlzFile("pokenav/nav_icon.4bpp.lz", NULL);
-    sRes.column[SCR_FAMECHECKER].size = 4;
-    PalFile("pokenav/nav_icon.gbapal", &sRes.column[SCR_FAMECHECKER].pal, 1, FALSE);
+    sRes.column[SCR_POKENAV].tiles = UnlzFile("pokenav/nav_icon.4bpp.lz", NULL);
+    sRes.column[SCR_POKENAV].size = 4;
+    PalFile("pokenav/nav_icon.gbapal", &sRes.column[SCR_POKENAV].pal, 1, FALSE);
 
     sRes.typeTiles = UnlzFile("types/move_types.4bpp.lz", NULL);
     PalFile("types/move_types.gbapal.lz", sRes.typePal, 3, TRUE);
@@ -642,10 +615,10 @@ static void LoadResources(void)
             free(raw);
         }
     }
-    sRes.playerIcon[MALE] = ReadRomfs("town_map/red_icon.4bpp", NULL);
-    sRes.playerIcon[FEMALE] = ReadRomfs("town_map/leaf_icon.4bpp", NULL);
-    PalFile("town_map/red_icon.gbapal", &sRes.playerIconPal[MALE], 1, FALSE);
-    PalFile("town_map/leaf_icon.gbapal", &sRes.playerIconPal[FEMALE], 1, FALSE);
+    sRes.playerIcon[MALE] = ReadRomfs("pokenav/region_map/brendan_icon.4bpp", NULL);
+    sRes.playerIcon[FEMALE] = ReadRomfs("pokenav/region_map/may_icon.4bpp", NULL);
+    PalFile("pokenav/region_map/brendan_icon.gbapal", &sRes.playerIconPal[MALE], 1, FALSE);
+    PalFile("pokenav/region_map/may_icon.gbapal", &sRes.playerIconPal[FEMALE], 1, FALSE);
     sRes.cursorTiles = UnlzFile("pokenav/region_map/cursor_small.4bpp.lz", NULL);
     PalFile("pokenav/region_map/cursor.gbapal", &sRes.cursorPal, 1, FALSE);
 
@@ -2393,7 +2366,7 @@ enum
     MODE_PARTY_MENU,
     MODE_BAG_MENU,
     /* The PokéNav, drawn by the compositor left of the column. */
-    MODE_FAMECHECKER,
+    MODE_POKENAV,
     /* The PC's boxes, drawn by the compositor over the whole screen. */
     MODE_STORAGE,
     /* The game's Pokédex, drawn by the compositor left of the column. */
@@ -2748,7 +2721,7 @@ static bool8 PartyMenuReady(void)
 /* The player stands in the field with nothing else going on. */
 static bool8 FieldIdle(void)
 {
-    return gMain.callback2 == CB2_Overworld && !ArePlayerFieldControlsLocked() && !ScriptContext_IsEnabled()
+    return gMain.callback2 == CB2_ReturnToField && !ArePlayerFieldControlsLocked() && !ScriptContext_IsEnabled()
         && gPlayerAvatar.tileTransitionState == T_NOT_MOVING && !gPaletteFade.active && !CtrStartMenu_Busy();
 }
 
@@ -2760,8 +2733,8 @@ static u8 EnabledScreens(void)
         mask |= 1 << SCR_POKEMON;
     if (FlagGet(FLAG_SYS_POKEDEX_GET))
         mask |= 1 << SCR_POKEDEX;
-    if (FlagGet(FLAG_SYS_POKENAV_GET) && CtrStartMenu_Available())
-        mask |= 1 << SCR_FAMECHECKER;
+    if (FlagGet(FLAG_SYS_POKEMON_GET) && CtrStartMenu_Available())
+        mask |= 1 << SCR_POKENAV;
     if (CtrStartMenu_Available())
         mask |= 1 << SCR_SAVE;
     return mask;
@@ -2797,16 +2770,16 @@ u16 __attribute__((weak)) CtrBattle_QuickBallItem(void)
 
 static u8 CurrentMode(void)
 {
-    if (gMain.callback2 == CB2_Overworld)
+    if (gMain.callback2 == CB2_ReturnToField)
         sInGame = TRUE;
     if (!sInGame || !gSaveBlock1Ptr || !gSaveBlock2Ptr)
         return MODE_OFF;
-    if (FALSE)
-        return MODE_FAMECHECKER;
+    if (CtrPokenav_IsOpen())
+        return MODE_POKENAV;
     if (CtrPokedex_IsOpen())
         return MODE_POKEDEX;
     /* Before the boxes: the bag can be opened from them, whole screen too. */
-    if (gMain.callback2 == CB2_BagMenuRun && gBagMenu)
+    if (gMain.callback2 == CB2_BagMenuRun )
         return MODE_BAG_MENU;
     /* A summary opened from the boxes is on the whole screen too. */
     if (CtrStorage_IsOpen() || CtrVideo_BottomWhole())
@@ -2856,9 +2829,9 @@ static void BeginSession(bool8 battle)
  */
 static bool8 UpdateSession(u8 mode, bool8 planRunning)
 {
-    bool8 inMenu = mode == MODE_PARTY_MENU || mode == MODE_BAG_MENU || mode == MODE_FAMECHECKER
+    bool8 inMenu = mode == MODE_PARTY_MENU || mode == MODE_BAG_MENU || mode == MODE_POKENAV
                 || mode == MODE_STORAGE || mode == MODE_POKEDEX;
-    bool8 home = gMain.callback2 == CB2_Overworld || gMain.callback2 == BattleMainCB2;
+    bool8 home = gMain.callback2 == CB2_ReturnToField || gMain.callback2 == BattleMainCB2;
 
     if (inMenu && !sSession.active)
         BeginSession(gMain.inBattle);
@@ -2910,7 +2883,7 @@ static void FastForward(void)
  */
 bool8 CtrBattleMenu_Active(void)
 {
-    return sRes.ready && !(gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_RECORDED | BATTLE_TYPE_WALLY_TUTORIAL));
+    return sRes.ready && !(gBattleTypeFlags & (BATTLE_TYPE_LINK | BATTLE_TYPE_OLD_MAN_TUTORIAL));
 }
 
 void CtrBattleMenu_Begin(void)
@@ -3131,6 +3104,7 @@ static void SnapshotSummary(ViewState *s, u8 slot)
 
 #endif
 
+#ifndef FIRERED
 static u8 PlayerRegionPosition(u8 *outX, u8 *outY)
 {
     /* region_map.c's InitMapBasedOnPlayerLocation, without its UI state. */
@@ -3185,6 +3159,7 @@ static u8 PlayerRegionPosition(u8 *outX, u8 *outY)
         return MAPSEC_NONE;
     mapWidth = header && header->mapLayout ? header->mapLayout->width : 1;
     mapHeight = header && header->mapLayout ? header->mapLayout->height : 1;
+#ifndef FIRERED
     if (gRegionMapEntries[mapsec].width && gRegionMapEntries[mapsec].height)
     {
         scale = mapWidth / gRegionMapEntries[mapsec].width;
@@ -3194,6 +3169,7 @@ static u8 PlayerRegionPosition(u8 *outX, u8 *outY)
         y /= scale ? scale : 1;
         if (y >= gRegionMapEntries[mapsec].height) y = gRegionMapEntries[mapsec].height - 1;
     }
+#endif
     else
     {
         x = y = 0;
@@ -3203,6 +3179,7 @@ static u8 PlayerRegionPosition(u8 *outX, u8 *outY)
     *outY = gRegionMapEntries[mapsec].y + y + 2;
     return mapsec;
 }
+#endif
 
 static void SnapshotCard(ViewState *s)
 {
@@ -3335,12 +3312,12 @@ static void Snapshot(ViewState *s, u8 mode, u8 pressed)
         s->screen = SCR_BAG;
         /* The bag from the field is left of the column; from anything else
          * it covers the column. */
-        s->bagView = gBagPosition.location == ITEMMENULOCATION_FIELD ? BAG_VIEW_SECTION : BAG_VIEW_WHOLE;
+        s->bagView = 1 ? BAG_VIEW_SECTION : BAG_VIEW_WHOLE;
         if (s->bagView == BAG_VIEW_WHOLE)
             s->screen = SCR_COUNT;
     }
-    else if (mode == MODE_FAMECHECKER)
-        s->screen = SCR_FAMECHECKER;
+    else if (mode == MODE_POKENAV)
+        s->screen = SCR_POKENAV;
     else if (mode == MODE_POKEDEX)
         s->screen = SCR_POKEDEX;
     else if (mode == MODE_STORAGE)
@@ -3468,7 +3445,7 @@ enum { PLATE_NORMAL, PLATE_CHOSEN, PLATE_PRESSED, PLATE_OFF };
 static void DrawColumnButton(const ViewState *s, int i, u8 state)
 {
     const u8 *labels[SCR_COUNT] = {
-        Ascii(CTR_TEXT("MAP", "MAPA")), gText_MenuPokemon, gText_MenuBag, s->name, gText_MenuPokedex, gText_MenuPokenav,
+        Ascii(CTR_TEXT("MAP", "MAPA")), gText_MenuPokemon, gText_MenuBag, s->name, gText_MenuPokedex, gText_MenuPlayer,
         gText_MenuSave, gText_MenuOption,
     };
     const Icon *icon = &sRes.column[i];
@@ -3722,7 +3699,7 @@ static void DrawPanel(const ViewState *s, int y, const u8 *hint)
     case PANEL_HINT:
         DrawBox(BOX_MESSAGE, 0, y, 20, ht);
         DrawStr(&sNormal, hint, 18, y + 8, TXT_WHITE, TXT_DARK);
-        DrawLabelButton(164, y + 4, 9, ht - 1, gText_Cancel2, s->pressed == HIT_CANCEL, TRUE, HIT_CANCEL);
+        DrawLabelButton(164, y + 4, 9, ht - 1, gText_Cancel, s->pressed == HIT_CANCEL, TRUE, HIT_CANCEL);
         break;
     case PANEL_MESSAGE:
         DrawPanelMessage(s->text, y, ht, TRUE);
@@ -3739,7 +3716,7 @@ static void DrawPanel(const ViewState *s, int y, const u8 *hint)
         DrawLabelButton(0, H - 32, 7, 4, up, s->pressed == HIT_UP, TRUE, HIT_UP);
         DrawLabelButton(56, H - 32, 7, 4, down, s->pressed == HIT_DOWN, TRUE, HIT_DOWN);
         DrawLabelButton(112, H - 32, 8, 4, Ascii(CTR_TEXT("OK", "VALE")), s->pressed == HIT_OK, TRUE, HIT_OK);
-        DrawLabelButton(176, H - 32, 8, 4, gText_Cancel2, s->pressed == HIT_CANCEL, TRUE, HIT_CANCEL);
+        DrawLabelButton(176, H - 32, 8, 4, gText_Cancel, s->pressed == HIT_CANCEL, TRUE, HIT_CANCEL);
         break;
     }
     case PANEL_ACTIONS:
@@ -3846,7 +3823,7 @@ static void DrawSummary(const ViewState *s)
     {
         static const u8 left[] = {CHAR_LEFT_ARROW, EOS}, right[] = {CHAR_RIGHT_ARROW, EOS};
         DrawLabelButton(0, 216, 7, 3, left, s->pressed == HIT_PREV, TRUE, HIT_PREV);
-        DrawLabelButton(56, 216, 16, 3, gText_Cancel2, s->pressed == HIT_BACK, TRUE, HIT_BACK);
+        DrawLabelButton(56, 216, 16, 3, gText_Cancel, s->pressed == HIT_BACK, TRUE, HIT_BACK);
         DrawLabelButton(184, 216, 7, 3, right, s->pressed == HIT_NEXT, TRUE, HIT_NEXT);
     }
 }
@@ -3989,12 +3966,14 @@ static void DrawMapMarks(const ViewState *s)
     RestoreClip(saved);
 }
 
+#ifndef FIRERED
 static void DrawRegionMap(const ViewState *s)
 {
     DrawMapMarks(s);
     AddHit(MAP_WIN_X0, MAP_WIN_Y0, MAP_WIN_X1 - MAP_WIN_X0, MAP_WIN_Y1 - MAP_WIN_Y0, HIT_MAP);
     DrawRegionName(s);
 }
+#endif
 
 /* The section under a tapped map cell, as the region map's cursor finds it. */
 static void PickMapCell(int x, int y)
@@ -4004,6 +3983,7 @@ static void PickMapCell(int x, int y)
     sPickMapsec = MAPSEC_NONE;
     for (int i = 0; i < MAPSEC_NONE; ++i)
     {
+#ifndef FIRERED
         const struct RegionMapLocation *e = &gRegionMapEntries[i];
         int ex = e->x + 1, ey = e->y + 2;
         if (e->width && cx >= ex && cy >= ey && cx < ex + e->width && cy < ey + e->height)
@@ -4013,6 +3993,7 @@ static void PickMapCell(int x, int y)
             sPickY = cy;
             return;
         }
+#endif
     }
 }
 
@@ -4134,7 +4115,7 @@ static const u8 *OptionValue(int row, u8 value)
     case 1: return value ? gText_BattleSceneOff : gText_BattleSceneOn;
     case 2: return value ? gText_BattleStyleSet : gText_BattleStyleShift;
     case 3: return value ? gText_SoundStereo : gText_SoundMono;
-    case 4: return value == 0 ? gText_ButtonTypeNormal : value == 1 ? gText_ButtonTypeLR : gText_ButtonTypeLEqualsA;
+    case 4: return value == 0 ? gText_ButtonTypeHelp : value == 1 ? gText_ButtonTypeLR : gText_ButtonTypeLEqualsA;
     case OPT_FPS:
     case OPT_VOXEL: return value ? gText_BattleSceneOn : gText_BattleSceneOff;
     case OPT_VOXEL_BLUR:
@@ -4986,7 +4967,7 @@ static void CancelBody(const ViewState *s, int unused)
                              PlateState(s, HIT_CANCEL, s->cursor == MAX_MON_MOVES), s->blink, HIT_CANCEL);
 
     (void)unused;
-    DrawSmoothStr(&sNormal, gText_Cancel2, 160 - SmoothInkWidth(&sNormal, gText_Cancel2, 4) / 2, oy + 5, 4, sWhite,
+    DrawSmoothStr(&sNormal, gText_Cancel, 160 - SmoothInkWidth(&sNormal, gText_Cancel, 4) / 2, oy + 5, 4, sWhite,
                   PLATE_DARK(sHueCancel), NULL);
 }
 
@@ -5006,7 +4987,7 @@ static void DrawBattleTarget(const ViewState *s)
         {6, ACT_Y, sHueRun, left, HIT_TARGET_LEFT},
         {164, ACT_Y, sHueRun, right, HIT_TARGET_RIGHT},
         {6, ROW_Y, sHueFight, ok, HIT_TARGET_OK},
-        {164, ROW_Y, sHueCancel, gText_Cancel2, HIT_CANCEL},
+        {164, ROW_Y, sHueCancel, gText_Cancel, HIT_CANCEL},
     };
 
     for (int i = 0; i < 4; ++i)
@@ -5310,11 +5291,9 @@ static void Render(const ViewState *s)
         else
             CopyCache(column ? CACHE_MENU : CACHE_WIDE);
         sOX = column ? 0 : (W - CW) / 2;
-        extern void CtrKantoMap_Draw(void);
-        extern void CtrFameChecker_Draw(void);
         switch (s->screen)
         {
-        case SCR_MAP: CtrKantoMap_Draw(); break;
+        case SCR_MAP: DrawRegionMap(s); break;
         case SCR_POKEMON:
         case SCR_BAG:
         case SCR_POKEDEX:
@@ -5326,7 +5305,6 @@ static void Render(const ViewState *s)
         case SCR_CARD: DrawTrainerCard(s); break;
         case SCR_SAVE: DrawSave(s); break;
         case SCR_OPTION: DrawOptions(s); break;
-        case SCR_FAMECHECKER: CtrFameChecker_Draw(); break;
         }
         sOX = 0;
         if (column)
@@ -5641,7 +5619,7 @@ static void RunStartPlan(void)
     if (++sPlan.wait < 8 && sPlan.tries)
         return;
     /* START only registers with the player free to move; try a few times. */
-    if (sPlan.tries >= 6 || gMain.callback2 != CB2_Overworld || CtrStartMenu_Busy())
+    if (sPlan.tries >= 6 || gMain.callback2 != CB2_ReturnToField || CtrStartMenu_Busy())
     {
         if (sPlan.tries >= 6 || ++sPlan.steps > 90)
             CancelPlan();
@@ -5780,10 +5758,12 @@ static void NavPress(u16 keys)
     sNav.keys = keys;
 }
 
+#ifndef FIRERED
 static struct PokenavMonList *NavMonList(void)
 {
     return GetSubstructPtr(POKENAV_SUBSTRUCT_MON_LIST);
 }
+#endif
 
 /*
  * The press that takes a cursor from cursor to target in one step: the
@@ -5831,6 +5811,7 @@ static u16 NavStep(bool8 *done)
         if (CtrPokenavMatchCall_Input(&option, &options) != 1 || sNav.target >= options) break;
         if (option == sNav.target) { *done = TRUE; return sNav.finish; }
         return NavNext(option, sNav.target, NavSetOption);
+#ifndef FIRERED
     case NAV_PARTY:
         if (!(mons = NavMonList()) || sNav.target >= mons->listCount) break;
         if (mons->currIndex == sNav.target) { *done = TRUE; return sNav.finish; }
@@ -5859,6 +5840,7 @@ static u16 NavStep(bool8 *done)
         if (mark == sNav.target) { *done = TRUE; return sNav.finish; }
         return NavNext(mark, sNav.target, NavSetMark);
     }
+#endif
     case NAV_LEAVE:
         return B_BUTTON;
     }
@@ -5874,7 +5856,7 @@ static void RunNav(u8 mode)
 
     if (sNav.kind == NAV_NONE)
         return;
-    if (mode != MODE_FAMECHECKER)
+    if (mode != MODE_POKENAV)
     {
         sNav.kind = NAV_NONE;
         return;
@@ -5891,7 +5873,7 @@ static void RunNav(u8 mode)
         return;
     }
     /* A single press also answers what waits inside a task: a call's text. */
-    0;
+    CtrPokenav_Screen(&ready);
     keys = ready || sNav.kind == NAV_PRESS ? NavStep(&done) : 0;
     if (!keys)
     {
@@ -5913,7 +5895,7 @@ static void RunNav(u8 mode)
 static void NavTap(int x, int y)
 {
     bool8 ready, zoomed, moving, expanded;
-    u32 screen = 0;
+    u32 screen = CtrPokenav_Screen(&ready);
     int yStart, deltaY, cursor, count, row;
     u16 top, selected, shown, total, option, options, normal, gift, giftStart;
     u8 lx, ly, width;
@@ -5922,6 +5904,7 @@ static void NavTap(int x, int y)
 
     if (y < 0 || y >= 160)
         return;
+#ifndef FIRERED
     switch (screen)
     {
     case POKENAV_MAIN_MENU:
@@ -6052,15 +6035,17 @@ static void NavTap(int x, int y)
             NavPress(y < 104 ? DPAD_UP : DPAD_DOWN);   /* the picture: previous, next */
         break;
     }
+#endif
 }
 
 /* A drag across the PokéNav's picture: the next or previous page or mon. */
 static void NavSwipe(int dy)
 {
     bool8 ready;
-    u32 screen = 0;
+    u32 screen = CtrPokenav_Screen(&ready);
     bool8 next = dy < 0;
 
+#ifndef FIRERED
     switch (screen)
     {
     case POKENAV_CONDITION_SEARCH_RESULTS:
@@ -6074,6 +6059,7 @@ static void NavSwipe(int dy)
         NavPress(next ? DPAD_DOWN : DPAD_UP);
         break;
     }
+#endif
 }
 
 
@@ -6105,7 +6091,7 @@ static void DoSave(void)
     {
         status = TrySavingData(SAVE_NORMAL);
     }
-    StringExpandPlaceholders(sSaveMessage, status == SAVE_STATUS_OK ? gText_PlayerSavedGame : gText_SaveError);
+    StringExpandPlaceholders(sSaveMessage, status == SAVE_STATUS_OK ? gText_RegisteredTextChanged_SavedTheGame : gText_SaveError_PleaseExchangeBackupMemory);
     if (status == SAVE_STATUS_OK)
         PlaySE(SE_SAVE);
     sSaveStep = SAVE_DONE;
@@ -6114,7 +6100,7 @@ static void DoSave(void)
 static void OpenSave(void)
 {
     sSaveStep = SAVE_ASK;
-    StringExpandPlaceholders(sSaveMessage, gText_ConfirmSave);
+    StringExpandPlaceholders(sSaveMessage, gText_RegisteredTextChanged_OKtoSave);
 }
 
 #if 0 /* The old party menu's buttons; the game's own takes touch itself. */
@@ -6249,7 +6235,7 @@ static void ActivateOption(u8 id)
         }
         return;
     }
-    static const u8 counts[OPTION_ROWS] = {3, 2, 2, 2, 3, WINDOW_FRAMES_COUNT, 2, 2, 0, 0, 2, 2};
+    static const u8 counts[OPTION_ROWS] = {3, 2, 2, 2, 3, 10, 2, 2, 0, 0, 2, 2};
     u8 value, step = back ? counts[row] - 1 : 1;
 
     if (!OptionLive(row, CtrSettings_Voxel()))
@@ -6390,10 +6376,10 @@ static void Activate(u8 id, u8 mode)
     {
         u8 screen = id - HIT_COLUMN;
 
-        if (mode == MODE_FAMECHECKER)
+        if (mode == MODE_POKENAV)
         {
             /* Its own button is its B; any other leaves it for that screen. */
-            if (screen == SCR_FAMECHECKER)
+            if (screen == SCR_POKENAV)
                 NavPress(B_BUTTON);
             else
             {
@@ -6434,11 +6420,11 @@ static void Activate(u8 id, u8 mode)
             return;
         /* The PokéNav takes the area when it opens; the top keeps the world
          * from the moment it is asked for, fade included. */
-        if (screen == SCR_FAMECHECKER)
+        if (screen == SCR_POKENAV)
         {
             if (FieldIdle())
             {
-                StartPlan(PLAN_START, START_OPTION);
+                StartPlan(PLAN_START, START_POKENAV);
                 BeginSession(FALSE);
             }
             return;
@@ -6466,11 +6452,10 @@ static void Activate(u8 id, u8 mode)
     case SCR_SAVE:
         if (id == HIT_YES && FieldIdle())
         {
-            if (sSaveStep == SAVE_ASK && gSaveFileStatus != SAVE_STATUS_EMPTY && gSaveFileStatus != SAVE_STATUS_CORRUPT)
+            if (sSaveStep == SAVE_ASK && gSaveFileStatus != SAVE_STATUS_EMPTY && gSaveFileStatus != SAVE_STATUS_INVALID)
             {
                 sSaveStep = SAVE_OVERWRITE;
-                StringExpandPlaceholders(sSaveMessage, gDifferentSaveFile ? gText_DifferentSaveFile
-                                                                         : gText_AlreadySavedFile);
+                StringExpandPlaceholders(sSaveMessage, gText_RegisteredTextChanged_AlreadySavedFile);
             }
             else
                 DoSave();
@@ -6588,12 +6573,12 @@ static u8 ProcessTouch(u8 mode)
 
             /* Or a summary opened from them, the same way. */
             if (!sTouch.dragged && CtrStorage_IsOpen())
-                CtrStorage_Tap(x, y);
+                /* CtrStorage_Tap(x, y); */ {}
             else if (!sTouch.dragged)
-                CtrSummary_Tap(x, y);
+                /* CtrSummary_Tap(x, y); */ {}
             return HIT_NONE;
         }
-        if (mode == MODE_FAMECHECKER && sTouch.startX < CW)
+        if (mode == MODE_POKENAV && sTouch.startX < CW)
         {
             if (!sTouch.dragged)
                 NavTap(sTouch.lastX, CtrVideo_BottomPictureY(sTouch.lastY));
@@ -6647,13 +6632,13 @@ static bool8 ColumnShown(u8 mode)
     switch (mode)
     {
     case MODE_FIELD:
-    case MODE_FAMECHECKER:
+    case MODE_POKENAV:
     case MODE_POKEDEX:
         return TRUE;
     case MODE_PARTY_MENU:
         return gPartyMenu.menuType == PARTY_MENU_TYPE_FIELD;
     case MODE_BAG_MENU:
-        return gBagPosition.location == ITEMMENULOCATION_FIELD;
+        return 1;
     }
     return FALSE;
 }
@@ -6731,7 +6716,7 @@ static void LeaveFocus(void)
 /* A on a column item: what a tap on it does, and where the focus goes. */
 static void ChooseColumnItem(u8 mode, u8 item)
 {
-    bool8 gameScreen = item == SCR_POKEMON || item == SCR_BAG || item == SCR_POKEDEX || item == SCR_FAMECHECKER;
+    bool8 gameScreen = item == SCR_POKEMON || item == SCR_BAG || item == SCR_POKEDEX || item == SCR_POKENAV;
 
     if (item == COL_RUN)
     {
@@ -6817,13 +6802,6 @@ static void ProcessKeys(u8 mode)
 
     if (sSwallow && !(in->held & CTR_KEY_GAME) && !(in->physicalHeld & (CTR_KEY_X | CTR_KEY_Y)))
         sSwallow = FALSE;
-        
-    extern void CtrHelp_Toggle(void);
-    if (in->physicalDown & (CTR_KEY_L | CTR_KEY_R))
-    {
-        CtrHelp_Toggle(); // Nasz autorski Help System z FireRed
-        PlaySE(SE_SELECT);
-    }
     if (!ColumnShown(mode))
     {
         if (sFocus != FOCUS_NONE || sInside != INSIDE_NONE)
@@ -6853,7 +6831,7 @@ static void ProcessKeys(u8 mode)
     if (sFocus == FOCUS_NONE)
     {
         /* Not in the middle of a script or a field effect. */
-        if (!x || (mode == MODE_FIELD && (gMain.callback2 != CB2_Overworld || ArePlayerFieldControlsLocked()
+        if (!x || (mode == MODE_FIELD && (gMain.callback2 != CB2_ReturnToField || ArePlayerFieldControlsLocked()
                                           || ScriptContext_IsEnabled())))
             return;
         sFocus = sShown.screen < SCR_COUNT && ColumnItemAvailable(sShown.screen) ? sShown.screen : SCR_MAP;
@@ -7146,7 +7124,7 @@ void CtrBottom_Frame(void)
         CtrVideo_HoldTop(hold);
         held = hold;
     }
-    if (hold && mode != MODE_FAMECHECKER && mode != MODE_STORAGE && mode != MODE_PARTY_MENU && !BagShown(mode)
+    if (hold && mode != MODE_POKENAV && mode != MODE_STORAGE && mode != MODE_PARTY_MENU && !BagShown(mode)
      && !DexShown(mode))   /* on show */
         FastForward();
 

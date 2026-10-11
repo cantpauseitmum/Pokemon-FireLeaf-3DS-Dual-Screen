@@ -14,8 +14,8 @@ fi
 source .venv/bin/activate
 
 # Install Flask quietly
-pip install flask --quiet
+python3 -m pip install flask --quiet
 
 # Run the web application
 cd web_builder
-python app.py
+python3 app.py

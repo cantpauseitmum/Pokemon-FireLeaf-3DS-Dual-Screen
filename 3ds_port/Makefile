@@ -10,7 +10,7 @@ DEVKITARM ?= $(DEVKITPRO)/devkitARM
 CTRULIB := $(DEVKITPRO)/libctru
 CC := $(DEVKITARM)/bin/arm-none-eabi-gcc
 ARCH := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
-CPPFLAGS := -DPORTABLE -DPLATFORM_3DS -D__3DS__ -Iinclude -I$(CTRULIB)/include
+CPPFLAGS := -DPORTABLE -DPLATFORM_3DS -D__3DS__ -DGAME_LANGUAGE=LANGUAGE_ENGLISH -Iinclude -I$(CTRULIB)/include
 CFLAGS := $(ARCH) -O2 -g -std=gnu99 -Wall -Wextra -Werror -ffunction-sections -fdata-sections
 LDFLAGS := $(ARCH) -L$(CTRULIB)/lib
 # Observe the public GX queue for upload admission; never start it early.
@@ -43,18 +43,17 @@ EMBED_DATA ?= 1
 # 0 chooses at runtime (loose files, then embedded data, then the data pack);
 # 1 = RomFS, 2 = loose files, 3 = data pack.
 DATA_BACKEND ?= 0
-PYTHON ?= python
+PYTHON ?= python3
 HOSTCC ?= gcc
 ROOT := ..
 SCRIPTS := ../tools/port_common
 EXESUFFIX := $(if $(filter Windows_NT,$(OS)),.exe,)
-SOURCES := src/main_3ds.c src/3ds_log.c src/3ds_platform.c src/3ds_input.c src/3ds_input_decode.c src/3ds_fs.c src/3ds_audio.c
-SOURCES += src/3ds_data.c src/3ds_pak.c src/3ds_settings.c src/3ds_prof.c
-SOURCES += src/3ds_video.c src/3ds_video_decode.c src/3ds_bottom_screen.c
+SOURCES := $(wildcard src/*.c) $(wildcard src/voxel/*.c)
+SOURCES := $(filter-out src/voxel/ctr_voxel.c,$(SOURCES))
 LIBS := -lcitro2d -lcitro3d $(LIBS)
 OBJECTS := $(patsubst src/%.c,build/%.o,$(SOURCES))
-GAMEFLAGS := -DPORTABLE -DPLATFORM_3DS -D__3DS__ -DMODERN=1 -DUBFIX -D__INTELLISENSE__ -D$(GAME_VERSION)
-GAMEFLAGS += -iquote include -iquote ../include -iquote ../include/constants -iquote ..
+GAMEFLAGS := -DPORTABLE -DPLATFORM_3DS -D__3DS__ -DGAME_LANGUAGE=LANGUAGE_ENGLISH -DMODERN=1 -DUBFIX -D$(GAME_VERSION)
+GAMEFLAGS += -iquote include -iquote ../include -iquote ../include/constants -iquote .. -I$(CTRULIB)/include -I$(DEVKITPRO)/portlibs/3ds/include
 # VOXEL=0 compiles the voxel overworld out entirely.
 VOXEL ?= 1
 CPPFLAGS += -DCTR_VOXEL_ENABLED=$(VOXEL)
@@ -89,6 +88,8 @@ GAMECFLAGS += -Wno-error=incompatible-pointer-types -Wno-error=int-conversion -W
 # Optional per-machine settings (e.g. SAMPLE_OVERLAY_DIR), never committed.
 -include local.mk
 include full.mk
+OBJECTS := $(filter-out $(patsubst src/%.c,build/%.o,$(BACKEND_SRCS)),$(OBJECTS))
+OBJECTS := $(filter-out $(patsubst src/voxel/%.c,build/voxel/%.o,$(VOXEL_GAME_SRCS)),$(OBJECTS))
 OBJECTS += $(FULL_OBJECTS)
 
 # Changing a stage/ABI flag cannot accidentally reuse objects from an older build.
@@ -105,7 +106,7 @@ all: $(TARGET).3dsx
 
 build/%.o: src/%.c Makefile
 	@mkdir -p $(dir $@)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -MMD -MP -c $< -o $@
+	$(CC) $(CPPFLAGS) $(GAMECFLAGS) $(GAMEFLAGS) -MMD -MP -c $< -o $@
 
 # The linker script and specs are generated from emerald3ds.ld.in (which serves as the base for both): 
 # the image link keeps .gamedata's contents, the shipped executable reserves it NOLOAD.
@@ -122,12 +123,12 @@ build/$(TARGET)_%.specs: build/$(TARGET)_%.ld Makefile
 # on a command line, so the object list goes through a response file.
 $(TARGET).elf: $(OBJECTS) build/$(TARGET)_release.specs
 	@mkdir -p build
-	$(file >build/link.rsp,$(OBJECTS))
+	@echo "$(OBJECTS)" > build/link.rsp
 	$(CC) $(LDFLAGS) -specs=build/$(TARGET)_release.specs -Wl,-Map,build/$(TARGET).map @build/link.rsp $(LIBS) -o $@
 
 build/gamedata_image.elf: $(OBJECTS) build/$(TARGET)_image.specs
 	@mkdir -p build
-	$(file >build/link.rsp,$(OBJECTS))
+	@echo "$(OBJECTS)" > build/link.rsp
 	$(CC) $(LDFLAGS) -specs=build/$(TARGET)_image.specs -Wl,-Map,build/gamedata_image.map @build/link.rsp $(LIBS) -o $@
 
 # 3dsxtool builds its own relocation table from the ELF's; the NOLOAD region is
@@ -185,9 +186,9 @@ verify: all verify-input
 verify-input: build/input_test.exe
 	./build/input_test.exe
 
-build/input_test.exe: tests/input_test.c src/3ds_input_decode.c include/3ds_input.h
+build/input_test.exe: tests/input_test.c  include/3ds_input.h
 	@mkdir -p build
-	$(HOSTCC) -std=c99 -O2 -Wall -Wextra -Werror -Iinclude tests/input_test.c src/3ds_input_decode.c -o $@
+	$(HOSTCC) -std=c99 -O2 -Wall -Wextra -Werror -Iinclude tests/input_test.c  -o $@
 
 verify: verify-video
 .PHONY: verify-video

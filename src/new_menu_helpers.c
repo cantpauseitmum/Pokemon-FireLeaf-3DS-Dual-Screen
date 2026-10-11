@@ -306,6 +306,10 @@ static void TaskFreeBufAfterCopyingTileDataToVram(u8 taskId)
 void *MallocAndDecompress(const void *src, u32 *size)
 {
     void *ptr;
+#if defined(PLATFORM_3DS) || defined(PORT_BRIDGE)
+    extern const void *Port_ResolveAssetPointer(const void *ptr);
+    src = Port_ResolveAssetPointer(src);
+#endif
     u8 *sizeAsBytes = (u8 *)size;
     const u8 *srcAsBytes = src;
 

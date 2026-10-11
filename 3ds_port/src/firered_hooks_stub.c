@@ -1,4 +1,5 @@
 #include "global.h"
+#include "overworld.h"
 #include "menu.h"
 #include "task.h"
 #include "main.h"
@@ -43,7 +44,7 @@ void CtrMenu_PostTap(s16 x, s16 y)
     sCtrMenuTap.pending = TRUE;
     sCtrMenuTap.x = x;
     sCtrMenuTap.y = y;
-    sCtrMenuTap.frame = gMain.vblankCounter1;
+    sCtrMenuTap.frame = gMain.vblankCounter2;
 }
 
 bool8 CtrMenu_TakeTap(s16 *x, s16 *y)
@@ -51,7 +52,7 @@ bool8 CtrMenu_TakeTap(s16 *x, s16 *y)
     if (!sCtrMenuTap.pending)
         return FALSE;
     sCtrMenuTap.pending = FALSE;
-    if (gMain.vblankCounter1 - sCtrMenuTap.frame > 30)
+    if (gMain.vblankCounter2 - sCtrMenuTap.frame > 30)
         return FALSE;
     *x = sCtrMenuTap.x;
     *y = sCtrMenuTap.y;
@@ -92,7 +93,7 @@ s8 CtrMenu_YesNoInput(void)
     else
         entry = MENU_B_PRESSED;
         
-    EraseYesNoWindow();
+    /* EraseYesNoWindow(); */
     return entry;
 }
 
@@ -121,3 +122,26 @@ int CtrPokenavMenu_Options(int *cursor) { return 0; }
 void CtrPokenavMenu_Rows(int *yStart, int *deltaY) {}
 bool8 CtrPokenavCondition_Marking(void) { return FALSE; }
 bool8 CtrMonMarkings_Menu(int *mark, int *mx, int *my) { return FALSE; }
+
+bool8 CtrBag_Close(void) { return FALSE; }
+void CtrBag_Touch(u8 phase, s16 x, s16 y) {}
+u32 CountTotalItemQuantityInBag(u16 itemId) { return 0; }
+bool8 CtrPokenav_IsOpen(void) { return FALSE; }
+u8 CtrPokenav_Screen(void) { return 0; }
+void CtrPokenavMatchCall_Input(u8 phase, s16 x, s16 y) {}
+void CtrPokenavList_View(u8 phase, s16 x, s16 y) {}
+void CB2_BagMenuRun(void) {}
+bool8 CtrExtras_PageUsed(u8 page) { return FALSE; }
+u8 CtrExtras_Value(u8 option) { return 0; }
+bool8 CtrStartMenu_Pending(void) { return FALSE; }
+void DrawRegionMap(void) {}
+u16 GetHoennPokedexCount(u8 flags) { return 0; }
+u8 CountPlayerMuseumPaintings(void) { return 0; }
+void PlayerRegionPosition(u16 *x, u16 *y) { *x = 0; *y = 0; }
+const u8 gText_Cancel[] = { 0xFF };
+const u16* GetWindowFrameTilesPal(u8 id) { return (const u16*)0; }
+
+void CtrExtras_Step(u8 option, s8 step) {}
+const u8* Port_ResolveFontPointer(u8 fontId) { return (const u8*)0; }
+
+const u8* GetItemName(u16 itemId) { return (const u8*)0; }

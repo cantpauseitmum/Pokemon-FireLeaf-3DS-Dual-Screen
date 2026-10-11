@@ -112,6 +112,10 @@ void AGBPrintf(const char *pBuf, ...)
 
 static void AGBPrintTransferDataInternal(u32 bAllData)
 {
+#if defined(PLATFORM_3DS) || defined(PORTABLE)
+    (void)bAllData;
+    return;
+#else
     LPFN_PRINT_FLUSH lpfnFuncFlush;
     u16 *pIME;
     u16 nIME;
@@ -148,6 +152,7 @@ static void AGBPrintTransferDataInternal(u32 bAllData)
 
     *pWSCNT = nOldWSCNT;
     *pIME = nIME;
+#endif
 }
 
 void AGBPrintFlush1Block(void)
@@ -166,7 +171,9 @@ void AGBAssert(const char *pFile, int nLine, const char *pExpression, int nStopP
     {
         AGBPrintf("ASSERTION FAILED  FILE=[%s] LINE=[%d]  EXP=[%s] \n", pFile, nLine, pExpression);
         AGBPrintFlush();
+        #ifndef PLATFORM_3DS
         asm(".hword 0xEFFF");
+#endif
     }
     else
     {
@@ -205,7 +212,9 @@ void NoCashGBAAssert(const char *pFile, s32 nLine, const char *pExpression, bool
     if (nStopProgram)
     {
         NoCashGBAPrintf("ASSERTION FAILED  FILE=[%s] LINE=[%d]  EXP=[%s]", pFile, nLine, pExpression);
+        #ifndef PLATFORM_3DS
         asm(".hword 0xEFFF");
+#endif
     }
     else
     {
@@ -253,7 +262,9 @@ void MgbaAssert(const char *pFile, s32 nLine, const char *pExpression, bool32 nS
     if (nStopProgram)
     {
         MgbaPrintf(MGBA_LOG_ERROR, "ASSERTION FAILED  FILE=[%s] LINE=[%d]  EXP=[%s]", pFile, nLine, pExpression);
+        #ifndef PLATFORM_3DS
         asm(".hword 0xEFFF");
+#endif
     }
     else
     {

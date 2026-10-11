@@ -31,7 +31,7 @@ static struct RfuSlotStatusUNI s_uniStatus[RFU_CHILD_MAX];
 // Initialization & Configuration
 // -------------------------------------------------------------------------
 
-u16 rfu_initializeAPI(u32 *APIBuffer, u16 buffByteSize, void *sioIntrTable_p, bool8 copyInterruptToRam) {
+u16 rfu_initializeAPI(u32 *APIBuffer, u16 buffByteSize, IntrFunc *sioIntrTable_p, bool8 copyInterruptToRam) {
     gSTWIStatus = &s_stwiStatus;
     gRfuLinkStatus = &s_rfuLinkStatus;
     gRfuStatic = &s_rfuStatic;
@@ -171,7 +171,7 @@ u16 rfu_setRecvBuffer(u8 connType, u8 slotNo, void *buffer, u32 buffSize) { retu
 // Stubs for STWI/INTR layer just in case game calls them directly
 // -------------------------------------------------------------------------
 
-void rfu_setTimerInterrupt(u8 timerNo, void *timerIntrTable_p) {}
+void rfu_setTimerInterrupt(u8 timerNo, IntrFunc *timerIntrTable_p) {}
 u16 rfu_MBOOT_CHILD_inheritanceLinkStatus(void) { return 0; }
 u8 *rfu_getSTWIRecvBuffer(void) { return NULL; }
 void rfu_REQ_RFUStatus(void) {}
@@ -179,13 +179,13 @@ u16 rfu_getRFUStatus(u8 *rfuState) { return 0; }
 void rfu_REQ_noise(void) {}
 
 void IntrSIO32(void) {}
-void STWI_init_all(void *interruptStruct, void *interrupt, bool8 copyInterruptToRam) {}
+void STWI_init_all(struct RfuIntrStruct *interruptStruct, IntrFunc *interrupt, bool8 copyInterruptToRam) {}
 void STWI_set_MS_mode(u8 mode) {}
 void STWI_init_Callback_M(void) {}
 void STWI_init_Callback_S(void) {}
 void STWI_set_Callback_M(void *callbackM) {}
 void STWI_set_Callback_S(void (*callbackS)(u16)) {}
-void STWI_init_timer(void *interrupt, s32 timerSelect) {}
+void STWI_init_timer(IntrFunc *interrupt, s32 timerSelect) {}
 void AgbRFU_SoftReset(void) {}
 void STWI_set_Callback_ID(void (*func)(void)) {}
 u16 STWI_read_status(u8 index) { return 0; }

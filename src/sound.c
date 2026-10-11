@@ -514,18 +514,20 @@ bool8 IsCryFinished(void)
 
 void StopCryAndClearCrySongs(void)
 {
-    m4aMPlayStop(gMPlay_PokemonCry);
+    if (gMPlay_PokemonCry != NULL)
+        m4aMPlayStop(gMPlay_PokemonCry);
     ClearPokemonCrySongs();
 }
 
 void StopCry(void)
 {
-    m4aMPlayStop(gMPlay_PokemonCry);
+    if (gMPlay_PokemonCry != NULL)
+        m4aMPlayStop(gMPlay_PokemonCry);
 }
 
 bool8 IsCryPlayingOrClearCrySongs(void)
 {
-    if (IsPokemonCryPlaying(gMPlay_PokemonCry))
+    if (gMPlay_PokemonCry != NULL && IsPokemonCryPlaying(gMPlay_PokemonCry))
     {
         return TRUE;
     }
@@ -538,7 +540,7 @@ bool8 IsCryPlayingOrClearCrySongs(void)
 
 bool8 IsCryPlaying(void)
 {
-    if (IsPokemonCryPlaying(gMPlay_PokemonCry))
+    if (gMPlay_PokemonCry != NULL && IsPokemonCryPlaying(gMPlay_PokemonCry))
         return TRUE;
     else
         return FALSE;
@@ -552,7 +554,7 @@ static void Task_DuckBGMForPokemonCry(u8 taskId)
         return;
     }
 
-    if (!IsPokemonCryPlaying(gMPlay_PokemonCry))
+    if (gMPlay_PokemonCry == NULL || !IsPokemonCryPlaying(gMPlay_PokemonCry))
     {
         m4aMPlayVolumeControl(&gMPlayInfo_BGM, TRACKS_ALL, 256);
         DestroyTask(taskId);

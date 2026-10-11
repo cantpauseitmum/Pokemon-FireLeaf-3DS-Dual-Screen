@@ -2483,7 +2483,7 @@ static void PlayerHandleChooseMove(void)
         extern void CtrBattleMenu_Begin(void);
         if (CtrBattleMenu_Active())
         {
-            struct ChooseMoveStruct *moveInfo = (struct ChooseMoveStruct *)(&gBattleResources->bufferA[gActiveBattler][4]);
+            struct ChooseMoveStruct *moveInfo = (struct ChooseMoveStruct *)(&gBattleBufferA[gActiveBattler][4]);
             s32 i;
 
             gNumberOfMovesToChoose = 0;

@@ -53,6 +53,9 @@ def main():
     counts = {}
     # Layout ids are the position in this table, one-based: LAYOUT_NONE is 0.
     for index, entry in enumerate(layouts, start=1):
+        if "blockdata_filepath" not in entry:
+            skipped += 1
+            continue
         blockdata = os.path.join(ROOT, entry["blockdata_filepath"])
         if not os.path.exists(blockdata):
             skipped += 1

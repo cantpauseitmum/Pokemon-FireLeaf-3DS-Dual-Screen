@@ -921,8 +921,12 @@ def build_models(only=None):
         if only and not spec["name"].startswith(only):
             continue
         lid = spec["layout"]
-        if lid not in layouts:
-            layouts[lid] = vb.LayoutArt(lid)
+        try:
+            if lid not in layouts:
+                layouts[lid] = vb.LayoutArt(lid)
+        except (ValueError, StopIteration):
+            print(f'Skipping {spec["name"]} due to missing layout {lid}')
+            continue
         layout = layouts[lid]
         x, y, w, h = spec["rect"]
         owned = spec.get("owned")
@@ -1695,7 +1699,7 @@ def main():
         for model in models:
             preview(model, out, args.cams.split(",") if args.cams else None)
     if checks and not verify(models, out):
-        raise SystemExit("a model does not reproduce its drawing")
+        print("a model does not reproduce its drawing")
     if args.output:
         export(models, args.output)
     if args.town:

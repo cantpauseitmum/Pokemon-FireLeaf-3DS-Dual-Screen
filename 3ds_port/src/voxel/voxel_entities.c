@@ -221,7 +221,7 @@ void VoxelEntities_GetPlayerWorldPos(float *worldX, float *worldZ)
  */
 static u32 GatherSource(const struct Sprite *sprite, int w, int h, bool color256, u8 *dest)
 {
-    const u8 *vram = VRAM_ + 0x10000;
+    const u8 *vram = (u8*)VRAM + 0x10000;
     bool mapping1d = (REG_DISPCNT & DISPCNT_OBJ_1D_MAP) != 0;
     unsigned bytesPerTile = color256 ? 64u : 32u;
     u32 written = 0;
@@ -360,7 +360,7 @@ static int StandingFootPad(const struct ObjectEventGraphicsInfo *info,
     const struct SpriteFrameImage *frame = &info->images[0];
     int tilesX = info->width / 8, tilesY = info->height / 8;
     u32 size = Port_GetSpriteFrameSize(frame->data, frame->size);
-    const u8 *tiles = Port_PeekSpriteFramePointer(frame->data, size, frame->offset);
+    const u8 *tiles = Port_PeekSpriteFramePointer(frame->data, size, 0);
 
     *exact = tiles != NULL;
     if (tilesX <= 0 || tilesY <= 0)
@@ -404,7 +404,7 @@ static bool RefreshSlot(unsigned index, const struct Sprite *sprite, uint16_t *a
     sourceBytes = GatherSource(sprite, w, h, color256, source);
     paletteBytes = color256 ? 256 * 2 : 16 * 2;
     /* OBJ palettes are the second half of PLTT; 8bpp uses it as one bank. */
-    memcpy(palette, PLTT + 0x200 + (color256 ? 0 : sprite->oam.paletteNum * 32), paletteBytes);
+    memcpy(palette, (u8*)PLTT + 0x200 + (color256 ? 0 : sprite->oam.paletteNum * 32), paletteBytes);
 
     changed = !slot->valid
            || slot->width != w || slot->height != h

@@ -10,9 +10,9 @@
  *
  *   romfs  the executable's own RomFS, in a development build that embeds
  *          its data;
- *   loose  sdmc:/3ds/emerald3ds/devdata/<path>, for iterating on one
+ *   loose  sdmc:/3ds/FireLeaf_FR/devdata/<path>, for iterating on one
  *          generated file without rebuilding anything else;
- *   pak    sdmc:/3ds/emerald3ds/emerald3ds.pak, the single data pack the
+ *   pak    sdmc:/3ds/FireLeaf_FR/FireLeaf_FR.pak, the single data pack the
  *          Pokemon Emerald 3Ds Dual Screen Builder generates from the player's own ROM.
  *
  * Files that only describe the executable (asset index, relocation tables,
@@ -26,8 +26,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define CTR_DATA_DIR "sdmc:/3ds/emerald3ds/"
-#define CTR_DATA_PAK_PATH CTR_DATA_DIR "emerald3ds.pak"
+#define CTR_DATA_DIR "sdmc:/3ds/FireLeaf_FR/"
+#define CTR_DATA_PAK_PATH CTR_DATA_DIR "FireLeaf_FR.pak"
 #define CTR_DATA_LOOSE_DIR CTR_DATA_DIR "devdata/"
 #define CTR_DATA_LOOSE_MARKER CTR_DATA_LOOSE_DIR ".emerald3ds-dev"
 /* Present in the RomFS of a build that embeds its game data. */

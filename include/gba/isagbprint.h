@@ -67,3 +67,7 @@ void AGBPrintInit(void);
 #endif
 
 #endif // GUARD_GBA_ISAGBPRINT_H
+
+#ifndef DBGPRINTF
+#define DBGPRINTF printf
+#endif

@@ -2,6 +2,7 @@
 #define GUARD_GBA_M4A_INTERNAL_H
 
 #include "gba/gba.h"
+#include "music_player.h"
 
 // ASCII encoding of 'Smsh' in reverse
 // This is presumably short for SMASH, the developer of MKS4AGB.
@@ -166,7 +167,9 @@ struct SoundChannel
 
 #define MAX_DIRECTSOUND_CHANNELS 12
 
-#define PCM_DMA_BUF_SIZE 1584 // size of Direct Sound buffer
+#ifndef PCM_DMA_BUF_SIZE
+#define PCM_DMA_BUF_SIZE 4907 // size of Direct Sound buffer
+#endif
 
 struct MusicPlayerInfo;
 
@@ -205,7 +208,11 @@ struct SoundInfo
     u8 gap[3];
     s32 pcmSamplesPerVBlank;
     s32 pcmFreq;
+#ifndef PORTABLE
     s32 divFreq;
+#else
+    float divFreq;
+#endif
     struct CgbChannel *cgbChans;
     MPlayMainFunc MPlayMainHead;
     struct MusicPlayerInfo *musicPlayerHead;
@@ -217,7 +224,11 @@ struct SoundInfo
     ExtVolPitFunc ExtVolPit;
     u8 gap2[16];
     struct SoundChannel chans[MAX_DIRECTSOUND_CHANNELS];
+#ifndef PORTABLE
     s8 pcmBuffer[PCM_DMA_BUF_SIZE * 2];
+#else
+    float pcmBuffer[PCM_DMA_BUF_SIZE * 2];
+#endif
 };
 
 struct SongHeader
@@ -257,8 +268,13 @@ struct PokemonCrySong
     u8 tieCmd; // 0x29
     u8 tieKeyValue; // 0x2A
     u8 tieVelocityValue; // 0x2B
+#ifndef PORTABLE
     u8 xwaitCmd[2]; // 0x2C
     u16 length; // 0x2E
+#else
+    u8 unkCmd0C[2]; // 0x2C
+    u16 unkCmd0CParam; // 0x2E
+#endif
     u8 end[2]; // 0x30
 };
 
@@ -306,7 +322,11 @@ struct MusicPlayerTrack
     struct SoundChannel *chan;
     struct ToneData tone;
     u8 gap[10];
+#ifndef PORTABLE
     u16 timer;
+#else
+    u16 unk_3A;
+#endif
     u32 unk_3C;
     u8 *cmdPtr;
     u8 *patternStack[3];
@@ -399,22 +419,34 @@ extern const u8 gCgbScaleTable[];
 extern const s16 gCgbFreqTable[];
 extern const u8 gNoiseTable[];
 
+extern const s8 gDeltaEncodingTable[];
+
 extern const struct PokemonCrySong gPokemonCrySongTemplate;
 
 extern const struct ToneData voicegroup000;
 
+#ifndef PORTABLE
 extern char gNumMusicPlayers[];
 extern char gMaxLines[];
-
 #define NUM_MUSIC_PLAYERS ((u16)gNumMusicPlayers)
 #define MAX_LINES ((u32)gMaxLines)
+#else
+#define NUM_MUSIC_PLAYERS 4
+#define MAX_LINES 0
+#endif
 
 u32 umul3232H32(u32 multiplier, u32 multiplicand);
 void SoundMain(void);
+#ifndef PORTABLE
 void SoundMainBTM(void);
-void TrackStop(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track);
-void MPlayMain(struct MusicPlayerInfo *);
+#else
+void SoundMainBTM(void *ptr);
+void TrackStop(struct MP2KPlayerState *player, struct MP2KTrack *track);
+void MP2KClearChain(struct MixerSource *chan);
 void RealClearChain(void *x);
+void MPlayJumpTableCopy(void **mplayJumpTable);
+#endif
+void MPlayMain(struct MusicPlayerInfo *);
 
 void MPlayContinue(struct MusicPlayerInfo *mplayInfo);
 void MPlayStart(struct MusicPlayerInfo *mplayInfo, struct SongHeader *songHeader);
@@ -433,7 +465,6 @@ void CgbOscOff(u8);
 void CgbModVol(struct CgbChannel *chan);
 u32 MidiKeyToCgbFreq(u8, u8, u8);
 void DummyFunc(void);
-void MPlayJumpTableCopy(MPlayFunc *mplayJumpTable);
 void SampleFreqSet(u32 freq);
 void m4aSoundVSyncOn(void);
 void m4aSoundVSyncOff(void);

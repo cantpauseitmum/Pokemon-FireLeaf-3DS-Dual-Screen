@@ -1,4 +1,9 @@
 #include "global.h"
+#include "malloc.h"
+
+#ifdef PORTABLE
+ALIGNED(4) EWRAM_DATA u8 gHeap[HEAP_SIZE] = {0};
+#endif
 
 static void *sHeapStart;
 static u32 sHeapSize;

@@ -2236,8 +2236,6 @@ bool8 CtrStorage_TakeTap(s16 *x, s16 *y)
 bool8 CtrStorage_IsOpen(void)
 {
     // Jeżeli jesteśmy w funkcji HandleInput, PC jest aktywne
-    if (gTasks[sStorage->taskId].func == Task_PokeStorageMain && sStorage->state == MSTATE_HANDLE_INPUT)
-        return TRUE;
     return FALSE;
 }
 #endif

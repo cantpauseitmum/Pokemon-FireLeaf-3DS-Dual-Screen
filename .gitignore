@@ -1,0 +1,102 @@
+# ==========================================
+# Upstream pokefirered generated build files
+# ==========================================
+*.1bpp
+*.4bpp
+*.8bpp
+*.gbapal
+*.gbapal.lz
+*.4bpp.lz
+*.8bpp.lz
+*.bin.lz
+*.hwlatfont
+*.fwlatfont
+*.hwjpnfont
+*.fwjpnfont
+*.lz
+*.til
+*.pcm
+*.rl
+
+# ROMs, ELFs, Maps, Objects
+*.gba
+!data/*.gba
+*.elf
+*.map
+*.o
+*.d
+*.i
+build/
+
+# Generated map headers and layout scripts
+data/layouts/layouts.inc
+data/layouts/layouts_table.inc
+data/maps/**/events.inc
+data/maps/**/header.inc
+data/maps/**/connections.inc
+data/maps/groups.inc
+data/maps/headers.inc
+include/constants/map_groups.h
+include/constants/region_map_sections.h
+src/data/heal_locations.h
+src/data/items.h
+src/data/wild_encounters.h
+src/data/region_map/region_map_entries.h
+src/data/region_map/region_map_entry_strings.h
+include/constants/heal_locations.h
+include/constants/map_event_ids.h
+include/constants/layouts.h
+
+# Generated sound samples and midi asm
+sound/**/*.bin
+sound/songs/midi/*.s
+
+# ==========================================
+# 3DS Port Build Outputs
+# ==========================================
+3ds_port/build/
+3ds_port/dist/
+3ds_port/local.mk
+3ds_port/romfs/**
+!3ds_port/romfs/boot.txt
+*.3dsx
+*.smdh
+*.cia
+*.3ds
+*.sav
+*.pak
+*.recipe
+*.shbin
+*.exe
+
+# ==========================================
+# Host Tools Executables
+# ==========================================
+tools/agbcc/
+tools/bin2c/bin2c
+tools/gbafix/gbafix
+tools/gbagfx/gbagfx
+tools/jsonproc/jsonproc
+tools/mapjson/mapjson
+tools/mid2agb/mid2agb
+tools/preproc/preproc
+tools/ramscrgen/ramscrgen
+tools/rsfont/rsfont
+tools/scaninc/scaninc
+tools/wav2agb/wav2agb
+tools/tools/
+
+# ==========================================
+# Python, Virtual Environments, OS & Editors
+# ==========================================
+.venv/
+__pycache__/
+*.py[cod]
+*.log
+.DS_Store
+*.DS_Store
+.vscode/
+.idea/
+.claude/
+.agents/
+*.bak

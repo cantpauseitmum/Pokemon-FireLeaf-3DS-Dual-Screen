@@ -97,8 +97,8 @@ struct
 
 const u8 gKeypadIconTiles[] = INCBIN_U8("graphics/fonts/keypad_icons.4bpp");
 
-static const u16 sFontSmallLatinGlyphs[] = INCBIN_U16("graphics/fonts/latin_small.hwlatfont");
-static const u8 sFontSmallLatinGlyphWidths[] = 
+const u16 gFontSmallLatinGlyphs[] = INCBIN_U16("graphics/fonts/latin_small.hwlatfont");
+const u8 gFontSmallLatinGlyphWidths[] = 
 {
      5,  5,  5,  5,  5,  5,  5,  5,  5,  4,  5,  4,  4,  5, 
      5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,
@@ -183,8 +183,8 @@ static const u8 sFontNormalCopy1LatinGlyphWidths[] =
 };
 static const u16 sFontTallJapaneseGlyphs[] = INCBIN_U16("graphics/fonts/japanese_tall.fwjpnfont");
 
-static const u16 sFontNormalLatinGlyphs[] = INCBIN_U16("graphics/fonts/latin_normal.fwlatfont");
-static const u8 sFontNormalLatinGlyphWidths[] =
+const u16 gFontNormalLatinGlyphs[] = INCBIN_U16("graphics/fonts/latin_normal.fwlatfont");
+const u8 gFontNormalLatinGlyphWidths[] =
 {
      6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
      6,  6,  8,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
@@ -1377,10 +1377,10 @@ void DecompressGlyph_Small(u16 glyphId, bool32 isJapanese)
     }
     else
     {
-        glyphs = sFontSmallLatinGlyphs + (0x10 * glyphId);
+        glyphs = gFontSmallLatinGlyphs + (0x10 * glyphId);
         DecompressGlyphTile(glyphs, (u16 *)gGlyphInfo.pixels);
         DecompressGlyphTile(glyphs + 0x8, (u16 *)(gGlyphInfo.pixels + 0x40));
-        gGlyphInfo.width = sFontSmallLatinGlyphWidths[glyphId];
+        gGlyphInfo.width = gFontSmallLatinGlyphWidths[glyphId];
         gGlyphInfo.height = 13;
     }
 }
@@ -1390,7 +1390,7 @@ static s32 GetGlyphWidth_Small(u16 glyphId, bool32 isJapanese)
     if (isJapanese == TRUE)
         return 8;
     else
-        return sFontSmallLatinGlyphWidths[glyphId];
+        return gFontSmallLatinGlyphWidths[glyphId];
 }
 
 static void DecompressGlyph_NormalCopy1(u16 glyphId, bool32 isJapanese)
@@ -1468,18 +1468,18 @@ void DecompressGlyph_Normal(u16 glyphId, bool32 isJapanese)
             {
                 gGlyphInfo.pixels[i] = lastColor | lastColor << 4;
                 // but why
-                gGlyphInfo.width = sFontNormalLatinGlyphWidths[0];
+                gGlyphInfo.width = gFontNormalLatinGlyphWidths[0];
                 gGlyphInfo.height = 14;
             }
         }
         else
         {
-            glyphs = sFontNormalLatinGlyphs + (0x20 * glyphId);
+            glyphs = gFontNormalLatinGlyphs + (0x20 * glyphId);
             DecompressGlyphTile(glyphs, (u16 *)gGlyphInfo.pixels);
             DecompressGlyphTile(glyphs + 0x8, (u16 *)(gGlyphInfo.pixels + 0x20));
             DecompressGlyphTile(glyphs + 0x10, (u16 *)(gGlyphInfo.pixels + 0x40));
             DecompressGlyphTile(glyphs + 0x18, (u16 *)(gGlyphInfo.pixels + 0x60));
-            gGlyphInfo.width = sFontNormalLatinGlyphWidths[glyphId];
+            gGlyphInfo.width = gFontNormalLatinGlyphWidths[glyphId];
             gGlyphInfo.height = 14;
         }
     }
@@ -1496,7 +1496,7 @@ static s32 GetGlyphWidth_Normal(u16 glyphId, bool32 isJapanese)
     }
     else
     {
-        return sFontNormalLatinGlyphWidths[glyphId];
+        return gFontNormalLatinGlyphWidths[glyphId];
     }
 }
 
@@ -1540,7 +1540,7 @@ static s32 GetGlyphWidth_NormalCopy2(u16 glyphId, bool32 isJapanese)
     if (isJapanese == TRUE)
         return 10;
     else
-        return sFontNormalLatinGlyphWidths[glyphId];
+        return gFontNormalLatinGlyphWidths[glyphId];
 }
 
 static void DecompressGlyph_Male(u16 glyphId, bool32 isJapanese)

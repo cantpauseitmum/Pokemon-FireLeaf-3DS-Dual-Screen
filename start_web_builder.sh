@@ -12,7 +12,7 @@ if [ ! -d ".venv" ]; then
 fi
 source .venv/bin/activate
 
-pip install flask --quiet
+python3 -m pip install flask --quiet
 
 cd web_builder
-python app.py
+python3 app.py

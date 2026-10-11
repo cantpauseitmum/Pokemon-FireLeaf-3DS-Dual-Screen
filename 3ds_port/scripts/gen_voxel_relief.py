@@ -2673,6 +2673,8 @@ def ledge_layouts():
                              encoding="utf-8"))["layouts"]
     out = []
     for e in layouts:
+        if "blockdata_filepath" not in e or "id" not in e:
+            continue
         path = os.path.join(vb.ROOT, e["blockdata_filepath"])
         if not os.path.exists(path):
             continue
@@ -2844,7 +2846,10 @@ def _map_sides():
 
 
 def open_roles(layout_id, connections=True):
-    entry = next(e for e in vb._layouts_json() if e["id"] == layout_id)
+    try:
+        entry = next(e for e in vb._layouts_json() if e.get("id") == layout_id)
+    except StopIteration:
+        raise ValueError(f'Layout ID not found: {layout_id}')
     if not _ROLES:
         _ROLES.append(vc.MapEvents())
     layout = vc.Layout(entry, _ROLES[0])
@@ -3836,14 +3841,18 @@ def export(layout_ids, path):
     a byte of pixels). A point's depth is its height, so it is not written."""
     layouts = json.load(open(os.path.join(vb.ROOT, "data", "layouts", "layouts.json"),
                              encoding="utf-8"))["layouts"]
-    index = {e["id"]: i + 1 for i, e in enumerate(layouts)}
+    index = {e.get("id"): i + 1 for i, e in enumerate(layouts) if "id" in e}
     tables = []
     world = world_levels()["base"]
     layout_ids = list(layout_ids) + sorted(
         l for l, b in world.items() if b and l not in layout_ids and drawn_group(l) is None)
     variants, cuts = {}, []     # (pair, metatile, mask) -> index; (layout, x, y, index, foot)
     for lid in layout_ids:
-        roles_layout, h, ledges = layout_heights(lid)
+        try:
+            roles_layout, h, ledges = layout_heights(lid)
+        except ValueError:
+            print(f'Skipping missing layout {lid} in export')
+            continue
         drawn = drawn_group(lid) is not None
         # the cut tiles first: they level the lattice under their rock
         cut = cut_cells(lid, roles_layout, h) if drawn else []
